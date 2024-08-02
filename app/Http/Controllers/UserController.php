@@ -21,6 +21,20 @@ class UserController extends Controller
         ], 200);
     }
 
+    public function userSelect()
+    {
+        $currentUserId = auth()->id();
+
+        // Mengambil semua pengguna kecuali pengguna yang sedang login
+        $users = User::where('id', '!=', $currentUserId)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User data successfully retrieved!',
+            'data' => $users
+        ], 200);
+    }
+
     public function getLoggedUser()
     {
         $user = Auth::user();
@@ -65,7 +79,7 @@ class UserController extends Controller
                 'email' => 'required|string|email',
                 'password' => 'required|string',
                 'phone_number' => 'required|numeric|starts_with:0|digits_between:11,14',
-                'role' => 'required|string|in:ADMIN,SALES',
+                'role' => 'required|string',
             ],
             [
                 'name.required' => 'Nama wajib diisi!',
@@ -124,7 +138,7 @@ class UserController extends Controller
                 'name' => 'required|string',
                 'email' => 'required|string|email',
                 'phone_number' => 'required|numeric|starts_with:0|digits_between:11,14',
-                'role' => 'required|string|in:ADMIN,SALES',
+                'role' => 'required|string',
             ],
             [
                 'name.required' => 'Nama wajib diisi!',

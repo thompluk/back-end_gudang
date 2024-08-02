@@ -50,7 +50,7 @@ class PrinsipalController extends Controller
             ],
             [
                 'name.required' => 'Nama Prinsipal wajib diisi!',
-                'telephone.unique' => 'Telepon wajib diisi!',
+                'telephone.required' => 'Telepon wajib diisi!',
                 'fax.required' => 'Fax wajib diisi!',
             ]
         );
