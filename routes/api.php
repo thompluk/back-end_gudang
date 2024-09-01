@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\PermintaanPembelianBarangController;
 use App\Http\Controllers\PermintaanPembelianBarangDetailController;
 use App\Http\Controllers\PrinsipalController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\PurchaseOrderDetailController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +40,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/prinsipal/update/{id}', [PrinsipalController::class, 'update'])->name('prinsipal.update');
     Route::delete('/prinsipal/{id}', [PrinsipalController::class, 'destroy'])->name('prinsipal.destroy');
 
+    // * Companies
+    Route::get('/allcompanies', [CompaniesController::class, 'index'])->name('companies.index');
+    Route::get('/companies/{id}', [CompaniesController::class, 'show'])->name('companies.show');
+    Route::post('/companies', [CompaniesController::class, 'create'])->name('companies.create');
+    Route::put('/companies/update/{id}', [CompaniesController::class, 'update'])->name('companies.update');
+    Route::delete('/companies/{id}', [CompaniesController::class, 'destroy'])->name('companies.destroy');
+
     // * PermintaanPembelianBarang
     Route::get('/allppb', [PermintaanPembelianBarangController::class, 'index'])->name('ppb.index');
     Route::get('/allppb/draft', [PermintaanPembelianBarangController::class, 'indexDraft'])->name('ppb.indexDraft');
@@ -51,12 +61,34 @@ Route::middleware('auth:sanctum')->group(function () {
 
      // * PermintaanPembelianBarangDetail
      Route::get('/allppbdetail', [PermintaanPembelianBarangDetailController::class, 'index'])->name('ppbdetail.index');
+     Route::get('/ppbDetailSelect', [PermintaanPembelianBarangDetailController::class, 'ppbDetailSelect'])->name('ppbdetail.ppbDetailSelect');
      Route::get('/ppbdetaillist/{id}', [PermintaanPembelianBarangDetailController::class, 'showbyppbid'])->name('ppbdetail.showbyppbid');
      Route::get('/ppbdetail/{id}', [PermintaanPembelianBarangDetailController::class, 'show'])->name('ppbdetail.show');
      Route::post('/ppbdetail', [PermintaanPembelianBarangDetailController::class, 'create'])->name('ppbdetail.create');
      Route::put('/ppbdetail/update/{id}', [PermintaanPembelianBarangDetailController::class, 'update'])->name('ppbdetail.update');
      Route::delete('/ppbdetail/{id}', [PermintaanPembelianBarangDetailController::class, 'destroy'])->name('ppbdetail.destroy');
-     Route::post('/saveAll/{ppb_id}', [PermintaanPembelianBarangDetailController::class, 'saveAll']);
+     Route::post('/ppbsaveAll/{ppb_id}', [PermintaanPembelianBarangDetailController::class, 'saveAll'])->name('ppbdetail.saveAll');
+
+      // * PermintaanPembelianBarang
+    Route::get('/allpo', [PurchaseOrderController::class, 'index'])->name('po.index');
+    Route::get('/allpo/draft', [PurchaseOrderController::class, 'indexDraft'])->name('po.indexDraft');
+    Route::get('/allpo/onApproval', [PurchaseOrderController::class, 'indexOnApproval'])->name('po.indexOnApproval');
+    Route::get('/allpo/done', [PurchaseOrderController::class, 'indexDone'])->name('po.indexDone');
+    Route::get('/allpo/rejected', [PurchaseOrderController::class, 'indexRejected'])->name('po.indexRejected');
+    Route::get('/po/{id}', [PurchaseOrderController::class, 'show'])->name('po.show');
+    Route::post('/po', [PurchaseOrderController::class, 'create'])->name('po.create');
+    Route::post('/po/post/{id}', [PurchaseOrderController::class, 'post'])->name('po.post');
+    Route::put('/po/update/{id}', [PurchaseOrderController::class, 'update'])->name('po.update');
+    Route::delete('/po/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
+
+     // * PermintaanPembelianBarangDetail
+     Route::get('/allpodetail', [PurchaseOrderDetailController::class, 'index'])->name('podetail.index');
+     Route::get('/podetaillist/{id}', [PurchaseOrderDetailController::class, 'showbypoid'])->name('podetail.showbypoid');
+     Route::get('/podetail/{id}', [PurchaseOrderDetailController::class, 'show'])->name('podetail.show');
+     Route::post('/podetail', [PurchaseOrderDetailController::class, 'create'])->name('podetail.create');
+     Route::put('/podetail/update/{id}', [PurchaseOrderDetailController::class, 'update'])->name('podetail.update');
+     Route::delete('/podetail/{id}', [PurchaseOrderDetailController::class, 'destroy'])->name('podetail.destroy');
+     Route::post('/posaveAll/{po_id}', [PurchaseOrderDetailController::class, 'saveAll'])->name('podetail.saveAll');
 
     // Route::get('/user/{role}', [UserController::class, 'getUserByRole'])->name('user.index');
     Route::get('/allindexApproval', [ApprovalController::class, 'indexApproval'])->name('indexApproval');

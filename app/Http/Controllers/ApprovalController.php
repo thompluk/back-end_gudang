@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\PermintaanPembelianBarang;
+use App\Models\PurchaseOrder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,14 +18,30 @@ class ApprovalController extends Controller
                                             ->where('menyetujui_status', 'Waiting for Confirmation')
                                             ->get()
                                             ->map(function($item) {
-                                                $item->tipe = 'ppb'; // Gantilah 'some_value' dengan nilai yang sesuai
+                                                $item->tipe = 'ppb';
+                                                $item->no = $item->no_ppb; // Gantilah 'some_value' dengan nilai yang sesuai
                                                 return $item;
                                             });;
+
+        $po = PurchaseOrder::where('verified_by_id', $currentUserId)->where('verified_by_status', 'Waiting for Confirmation')
+                                            ->orWhere('approved_by_id', $currentUserId)->where('verified_by_status', 'Approved')
+                                            ->where('approved_by_status', 'Waiting for Confirmation')
+                                            ->get()
+                                            ->map(function($item) {
+                                                $item->tipe = 'po';
+                                                $item->no = $item->no_po;
+                                                $item->pemohon = $item->prepared_by; // Gantilah 'some_value' dengan nilai yang sesuai
+                                                return $item;
+                                            });;                                    
+
+                                            
+        // Menggabungkan kedua koleksi
+        $mergedData = $ppb->merge($po);
 
         return response()->json([
             'success' => true,
             'message' => 'Data Approval successfully retrieved!',
-            'data' => $ppb
+            'data' => $mergedData
         ], 200);
     }
 
@@ -31,6 +49,8 @@ class ApprovalController extends Controller
 
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
+        }else if($request->tipe == 'po'){
+            $po = PurchaseOrder::find($request->id);
         }
 
         if ($ppb != null and $request->tipe == 'ppb') {
@@ -51,12 +71,40 @@ class ApprovalController extends Controller
                 ]);
             }
         }
+
+        if ($po != null and $request->tipe == 'po') {
+            
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            if($po->verified_by_id == $po->approved_by_id){
+                $po->update([
+                    'verified_by_status' => 'Approved',
+                    'verified_by_date' => $formattedDate,
+                    'approved_by_status' => 'Approved',
+                    'approved_by_date' => $formattedDate,
+                    'status' => 'Approved',
+                ]);
+            }elseif($po->verified_by_id == 'Waiting for Confirmation'){
+                $po->update([
+                    'verified_by_status' => 'Approved',
+                    'verified_by_date' => $formattedDate,
+                ]);
+            }else{
+                $po->update([
+                    'approved_by_status' => 'Approved',
+                    'approved_by_date' => $formattedDate,
+                    'status' => 'Approved',
+                ]);
+            }
+        }
     }
 
     public function reject(Request $request){
 
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
+        }else if($request->tipe == 'po'){
+            $po = PurchaseOrder::find($request->id);
         }
 
         if ($ppb != null and $request->tipe == 'ppb') {
@@ -82,13 +130,46 @@ class ApprovalController extends Controller
                 ]);
             }
         }
+
+        if ($po != null and $request->tipe == 'po') {
+
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            if($po->verified_by_id == $po->approved_by_id){
+                $po->update([
+                    'verified_by_status' => 'Rejected',
+                    'verified_by_date' => $formattedDate,
+                    'approved_by_status' => 'Rejected',
+                    'approved_by_date' => $formattedDate,
+                    'status' => 'Rejected',
+                    'remarks' => $request->remarks ."\n". 'Rejected by : ' . Auth::user()->name
+                ]);
+            }elseif($po->verified_by_id == 'Waiting for Confirmation'){
+                $po->update([
+                    'verified_by_status' => 'Rejected',
+                    'verified_by_date' => $formattedDate,
+                    'approved_by_status' => '-',
+                    'status' => 'Rejected',
+                    'remarks' => $request->remarks ."\n". 'Rejected by : ' . Auth::user()->name
+                ]);
+            }else{
+                $po->update([
+                    'approved_by_status' => 'Rejected',
+                    'approved_by_date' => $formattedDate,
+                    'status' => 'Rejected',
+                    'remarks' => $request->remarks . "\n". 'Rejected by : ' . Auth::user()->name
+                ]);
+            }
+        }
     }
     
     public function return(Request $request){
 
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
-        }       
+        }else if($request->tipe == 'po'){
+            $po = PurchaseOrder::find($request->id);
+        }    
 
 
         if ($ppb != null and $request->tipe == 'ppb') {
@@ -117,6 +198,42 @@ class ApprovalController extends Controller
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
                 'data' => $ppb
+            ],200);
+        }
+
+        if ($po != null and $request->tipe == 'po') {
+
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            if($po->verified_by_id == $po->approved_by_id){
+                $po->update([
+                    'verified_by_status' => 'Returned',
+                    'verified_by_date' => $formattedDate,
+                    'approved_by_status' => 'Returned',
+                    'approved_by_date' => $formattedDate,
+                    'status' => 'Returned',
+                    'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
+                ]);
+            }elseif($po->verified_by_id == 'Waiting for Confirmation'){
+                $po->update([
+                    'verified_by_status' => 'Returned',
+                    'verified_by_date' => $formattedDate,
+                    'approved_by_status' => '-',
+                    'status' => 'Returned',
+                    'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
+                ]);
+            }else{
+                $po->update([
+                    'approved_by_status' => 'Returned',
+                    'approved_by_date' => $formattedDate,
+                    'status' => 'Returned',
+                    'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
+                ]);
+            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $po
             ],200);
         }
 

@@ -26,6 +26,26 @@ class PermintaanPembelianBarangDetailController extends Controller
         ], 200);
     }
 
+    public function ppbDetailSelect()
+    {
+        // Mengambil semua pengguna kecuali pengguna yang sedang login
+        $ppb_detail = PermintaanPembelianBarangDetail::with('permintaanPembelianBarang')
+            ->whereHas('permintaanPembelianBarang', function ($query) {
+                $query->where('status', 'Done');
+            })
+            ->get();
+
+        foreach ($ppb_detail as $detail) {
+            $detail->setAttribute('no_ppb', $detail->permintaanPembelianBarang->no_ppb);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User data successfully retrieved!',
+            'data' => $ppb_detail
+        ], 200);
+    }
+
     public function showbyppbid($ppb_id)
     {
         $ppb_detail = PermintaanPembelianBarangDetail::where('ppb_id', $ppb_id)->get();
