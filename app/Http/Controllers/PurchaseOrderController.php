@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderDetail;
+use App\Models\StockItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -15,6 +16,17 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $po = PurchaseOrder::orderBy('tanggal')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Purchase Order successfully retrieved!',
+            'data' => $po
+        ], 200);
+    }
+
+    public function indexpoumum()
+    {
+        $po = PurchaseOrder::orderBy('tanggal')->where('status', 'Done')->get();
 
         return response()->json([
             'success' => true,
@@ -139,6 +151,10 @@ class PurchaseOrderController extends Controller
             'approved_by_date'=>null,
             'approved_by_status'=>null,
             'remarks'=>null,
+            'arrival_date'=>null,
+            'receiver'=>null,
+            'receiver_id'=>null,
+            'arrival_status'=>null,
         ]);
 
         return response()->json([
@@ -294,7 +310,9 @@ class PurchaseOrderController extends Controller
         $po->update([
             'status'=>'On Approval',
             'verified_by_status'=>'Waiting for Confirmation',
+            'verified_by_date'=>null,
             'approved_by_status'=>'Waiting for Confirmation',
+            'approved_by_date'=>null,
             'remarks'=>null,
         ]);
 
@@ -304,5 +322,82 @@ class PurchaseOrderController extends Controller
             'data' => $po
         ], 200);
         
+    }
+
+    public function arrivalData($id){
+        $po = PurchaseOrder::find($id);
+        $po_detail = PurchaseOrderDetail::where('po_id', $id)->where('is_items_created', 0)->get();
+        $detail_length = count($po_detail);
+
+        $formattedDate = Carbon::now()->format('Y-m-d');
+        $receiver = Auth::user()->name;
+        $receiver_id = Auth::user()->id;
+
+        $data = [];
+        
+
+        foreach($po_detail as $item){
+            $data[] = [
+                'po_detail_id' => $item->id,
+                'item_name' => $item->item,
+                'no_po' => $po->no_po,
+                'no_ppb' => $item->no_ppb,
+                'arrival_date' => $formattedDate,
+                'description' => $item->description,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'remarks' => $item->remarks,
+                'item_unit' => $item->item_unit,
+                'arrival_date'=>$formattedDate,
+                'receiver'=>$receiver,
+                'receiver_id'=>$receiver_id,
+                'detail_length' => $detail_length,
+            ];
+        }
+
+        // $data = [
+        //     'arrival_date'=>$formattedDate,
+        //     'receiver'=>$receiver,
+        //     'receiver_id'=>$receiver_id,
+        // ];
+
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Purchase Order updated successfully!',
+            'data' => $data,
+        ], 200);
+    }
+
+    public function arrived($id)
+    {
+
+        $po = PurchaseOrder::find($id);
+
+        $formattedDate = Carbon::now()->format('Y-m-d');
+        $receiver = Auth::user()->name;
+        $receiver_id = Auth::user()->id;
+
+        if ($po == null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Purchase Order not found!',
+                'data' => $po
+            ], 404);
+        } else {
+            $po->update([
+                'arrival_date'=>$formattedDate,
+                'receiver'=>$receiver,
+                'receiver_id'=>$receiver_id,
+                'arrival_status'=>'Arrived',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Purchase Order updated successfully!',
+                'data' => $po,
+            ], 200);
+        }
     }
 }

@@ -11,23 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchase_order_detail', function (Blueprint $table) {
+        Schema::create('stock_material', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('po_id')->nullable();
-            $table->string('item')->nullable();
-            $table->string('no_ppb')->nullable();
-            $table->unsignedBigInteger('ppb_detail_id')->nullable();
-            $table->text('description')->nullable();
+            $table->string('stock_name')->nullable();
             $table->integer('quantity')->nullable();
+            $table->string('no_ppb')->nullable();
+            $table->string('no_po')->nullable();
+            $table->text('description')->nullable();
             $table->decimal('unit_price', 15, 0)->nullable();
-            $table->integer('discount')->nullable();
-            $table->decimal('amount', 15, 0)->nullable();
             $table->text('remarks')->nullable();
             $table->string('item_unit')->nullable();
-            $table->boolean('is_items_created')->nullable();
+            $table->date('arrival_date')->nullable();
+            $table->string('receiver')->nullable();
+            $table->unsignedBigInteger('receiver_id')->nullable();
             $table->timestamps();
-
-            $table->foreign('po_id')->references('id')->on('purchase_order')->onDelete('cascade');
         });
     }
 
@@ -36,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchase_order_detail');
+        Schema::dropIfExists('stock_material');
     }
 };

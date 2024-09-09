@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PermintaanPembelianBarang;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,16 +50,18 @@ class ApprovalController extends Controller
 
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
+            $po = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
+            $ppb = null;
         }
 
-        if ($ppb != null and $request->tipe == 'ppb') {
+        if ($ppb !== null && $request->tipe == 'ppb') {
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Approved',
                     'menyetujui_status' => 'Approved',
-                    'status' => 'Approved',
+                    'status' => 'Done',
                 ]);
             }elseif($ppb->mengetahui_status == 'Waiting for Confirmation'){
                 $ppb->update([
@@ -67,12 +70,14 @@ class ApprovalController extends Controller
             }else{
                 $ppb->update([
                     'menyetujui_status' => 'Approved',
-                    'status' => 'Approved',
+                    'status' => 'Done',
                 ]);
             }
         }
 
-        if ($po != null and $request->tipe == 'po') {
+        if ($po !== null && $request->tipe == 'po') {
+
+            $po_detail = PurchaseOrderDetail::where('po_id', $request->id)->get();
             
             $formattedDate = Carbon::now()->format('Y-m-d');
 
@@ -82,8 +87,18 @@ class ApprovalController extends Controller
                     'verified_by_date' => $formattedDate,
                     'approved_by_status' => 'Approved',
                     'approved_by_date' => $formattedDate,
-                    'status' => 'Approved',
+                    'status' => 'Done',
+                    'arrival_status' => 'Awaiting Delivery',
                 ]);
+
+                foreach ($po_detail as $detail) {
+                    $ppb = PermintaanPembelianBarang::where('no_ppb', $detail->no_ppb);
+                    $ppb->update([
+                        'purchasing' => $po->prepared_by,
+                        'purchasing_id' => $po->prepared_by_id,
+                        'purchasing_status' => 'Approved',
+                    ]);
+                }
             }elseif($po->verified_by_id == 'Waiting for Confirmation'){
                 $po->update([
                     'verified_by_status' => 'Approved',
@@ -93,8 +108,18 @@ class ApprovalController extends Controller
                 $po->update([
                     'approved_by_status' => 'Approved',
                     'approved_by_date' => $formattedDate,
-                    'status' => 'Approved',
+                    'status' => 'Done',
+                    'arrival_status' => 'Awaiting Delivery',
                 ]);
+
+                foreach ($po_detail as $detail) {
+                    $ppb = PermintaanPembelianBarang::where('no_ppb', $detail->no_ppb);
+                    $ppb->update([
+                        'purchasing' => $po->prepared_by,
+                        'purchasing_id' => $po->prepared_by_id,
+                        'purchasing_status' => 'Approved',
+                    ]);
+                }
             }
         }
     }
@@ -103,8 +128,10 @@ class ApprovalController extends Controller
 
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
+            $po = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
+            $ppb = null;
         }
 
         if ($ppb != null and $request->tipe == 'ppb') {
@@ -167,10 +194,11 @@ class ApprovalController extends Controller
 
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
+            $po = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
+            $ppb = null;
         }    
-
 
         if ($ppb != null and $request->tipe == 'ppb') {
             if($ppb->mengetahui_id == $ppb->menyetujui_id){

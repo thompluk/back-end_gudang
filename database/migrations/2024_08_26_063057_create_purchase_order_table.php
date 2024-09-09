@@ -43,6 +43,10 @@ return new class extends Migration
             $table->date('approved_by_date')->nullable();
             $table->string('approved_by_status')->nullable();
             $table->text('remarks')->nullable();
+            $table->date('arrival_date')->nullable();
+            $table->string('receiver')->nullable();
+            $table->unsignedBigInteger('receiver_id')->nullable();
+            $table->string('arrival_status')->nullable();
             $table->timestamps();
         });
     }

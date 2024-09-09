@@ -24,6 +24,7 @@ class PurchaseOrderDetail extends Model
         'amount',
         'remarks',
         'item_unit',
+        'is_items_created',
         'updated_at',
         'created_at',
     ];

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PermintaanPembelianBarang;
 use App\Models\PermintaanPembelianBarangDetail;
+use App\Models\PurchaseOrderDetail;
 use Brick\Math\BigInteger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -26,14 +27,46 @@ class PermintaanPembelianBarangDetailController extends Controller
         ], 200);
     }
 
-    public function ppbDetailSelect()
+    public function ppbDetailSelect(Request $request)
     {
-        // Mengambil semua pengguna kecuali pengguna yang sedang login
-        $ppb_detail = PermintaanPembelianBarangDetail::with('permintaanPembelianBarang')
+        $ids = $request->input('ppb_detail_ids');
+
+        // $ppb_detail_id = PurchaseOrderDetail::select('ppb_detail_id')->where('ppb_detail_id', '!=', null)->get();
+
+        if (!empty($ids)) {
+            
+            $ppb_detail = PermintaanPembelianBarangDetail::with('permintaanPembelianBarang')
             ->whereHas('permintaanPembelianBarang', function ($query) {
                 $query->where('status', 'Done');
             })
+            ->whereNotIn('id', function($query) {
+                $query->select('ppb_detail_id')->where('ppb_detail_id', '!=', null)
+                    ->from('purchase_order_detail');
+            })
+            ->whereNotIn('id', $ids)
             ->get();
+        } else {
+            $ppb_detail = PermintaanPembelianBarangDetail::with('permintaanPembelianBarang')
+            ->whereHas('permintaanPembelianBarang', function ($query) {
+                $query->where('status', 'Done');
+            })
+            ->whereNotIn('id', function($query) {
+                $query->select('ppb_detail_id')->where('ppb_detail_id', '!=', null)
+                    ->from('purchase_order_detail');
+            })
+            ->get();
+        }
+
+        // Mengambil semua pengguna kecuali pengguna yang sedang login
+        // $ppb_detail = PermintaanPembelianBarangDetail::with('permintaanPembelianBarang')
+        //     ->whereHas('permintaanPembelianBarang', function ($query) {
+        //         $query->where('status', 'Done');
+        //     })
+        //     ->whereNotIn('id', function($query) {
+        //         $query->select('ppb_detail_id')
+        //             ->from('purchase_order_detail');
+        //     })
+        //     ->get();
 
         foreach ($ppb_detail as $detail) {
             $detail->setAttribute('no_ppb', $detail->permintaanPembelianBarang->no_ppb);
@@ -41,8 +74,8 @@ class PermintaanPembelianBarangDetailController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User data successfully retrieved!',
-            'data' => $ppb_detail
+            'message' => 'PPB Detail successfully retrieved!',
+            'data' => $ppb_detail,
         ], 200);
     }
 
@@ -78,7 +111,7 @@ class PermintaanPembelianBarangDetailController extends Controller
         }
 
         $ppb_detail = PermintaanPembelianBarangDetail::create([
-            'ppb_id' => $request->ppb_id
+            'ppb_id' => $request->ppb_id,
         ]);
 
         return response()->json([

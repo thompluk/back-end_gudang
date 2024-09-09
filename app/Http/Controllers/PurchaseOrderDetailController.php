@@ -116,6 +116,7 @@ class PurchaseOrderDetailController extends Controller
                     'amount' => $data['amount'],
                     'remarks' => $data['remarks'],
                     'item_unit' => $data['item_unit'],
+                    'is_items_created' => 0
                 ]
             );
         }

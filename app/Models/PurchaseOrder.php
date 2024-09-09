@@ -43,6 +43,10 @@ class PurchaseOrder extends Model
         'approved_by_date',
         'approved_by_status',
         'remarks',
+        'arrival_date',
+        'receiver',
+        'receiver_id',
+        'arrival_status',
         'updated_at',
         'created_at',
     ];
