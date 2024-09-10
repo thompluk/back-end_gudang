@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BuktiPengeluaranBarang;
 use App\Models\PermintaanPembelianBarang;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderDetail;
@@ -34,10 +35,20 @@ class ApprovalController extends Controller
                                                 $item->pemohon = $item->prepared_by; // Gantilah 'some_value' dengan nilai yang sesuai
                                                 return $item;
                                             });;                                    
-
+                    
+        $bpb = BuktiPengeluaranBarang::where('approved_by_id', $currentUserId)->where('approved_by_status', 'Waiting for Confirmation')
+                                                ->get()
+                                                ->map(function($item) {
+                                                $item->tipe = 'bpb';
+                                                $item->no = $item->no_bpb;
+                                                $item->tanggal  = $item->date;
+                                                $item->pemohon = $item->request_by; // Gantilah 'some_value' dengan nilai yang sesuai
+                                                return $item;
+                                            });;   
                                             
         // Menggabungkan kedua koleksi
         $mergedData = $ppb->merge($po);
+        $mergedData = $mergedData->merge($bpb);
 
         return response()->json([
             'success' => true,
@@ -51,8 +62,14 @@ class ApprovalController extends Controller
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
             $po = null;
+            $bpb = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
+            $ppb = null;
+            $bpb = null;
+        }else if($request->tipe == 'bpb'){
+            $bpb = BuktiPengeluaranBarang::find($request->id);
+            $po = null;
             $ppb = null;
         }
 
@@ -99,7 +116,7 @@ class ApprovalController extends Controller
                         'purchasing_status' => 'Approved',
                     ]);
                 }
-            }elseif($po->verified_by_id == 'Waiting for Confirmation'){
+            }elseif($po->verified_by_status == 'Waiting for Confirmation'){
                 $po->update([
                     'verified_by_status' => 'Approved',
                     'verified_by_date' => $formattedDate,
@@ -122,6 +139,19 @@ class ApprovalController extends Controller
                 }
             }
         }
+
+        if ($bpb !== null && $request->tipe == 'bpb') {
+            
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            $bpb->update([
+                'approved_by_status' => 'Approved',
+                'approved_by_date' => $formattedDate,
+                'status' => 'Done',
+                'delivery_status' => 'Awaiting Delivery',
+            ]);
+            
+        }
     }
 
     public function reject(Request $request){
@@ -129,12 +159,18 @@ class ApprovalController extends Controller
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
             $po = null;
+            $bpb = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
             $ppb = null;
+            $bpb = null;
+        }else if($request->tipe == 'bpb'){
+            $bpb = BuktiPengeluaranBarang::find($request->id);
+            $po = null;
+            $ppb = null;
         }
 
-        if ($ppb != null and $request->tipe == 'ppb') {
+        if ($ppb != null && $request->tipe == 'ppb') {
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Rejected',
@@ -158,7 +194,7 @@ class ApprovalController extends Controller
             }
         }
 
-        if ($po != null and $request->tipe == 'po') {
+        if ($po != null && $request->tipe == 'po') {
 
             $formattedDate = Carbon::now()->format('Y-m-d');
 
@@ -188,6 +224,19 @@ class ApprovalController extends Controller
                 ]);
             }
         }
+
+        if ($bpb != null && $request->tipe == 'bpb') {
+
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            $bpb->update([
+                'approved_by_status' => 'Rejected',
+                'approved_by_date' => $formattedDate,
+                'status' => 'Rejected',
+                'remarks' => $request->remarks . "\n". 'Rejected by : ' . Auth::user()->name
+            ]);
+            
+        }
     }
     
     public function return(Request $request){
@@ -195,12 +244,18 @@ class ApprovalController extends Controller
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
             $po = null;
+            $bpb = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
             $ppb = null;
-        }    
+            $bpb = null;
+        }else if($request->tipe == 'bpb'){
+            $bpb = BuktiPengeluaranBarang::find($request->id);
+            $po = null;
+            $ppb = null;
+        }
 
-        if ($ppb != null and $request->tipe == 'ppb') {
+        if ($ppb != null && $request->tipe == 'ppb') {
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Returned',
@@ -229,7 +284,7 @@ class ApprovalController extends Controller
             ],200);
         }
 
-        if ($po != null and $request->tipe == 'po') {
+        if ($po != null && $request->tipe == 'po') {
 
             $formattedDate = Carbon::now()->format('Y-m-d');
 
@@ -262,6 +317,24 @@ class ApprovalController extends Controller
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
                 'data' => $po
+            ],200);
+        }
+
+        if ($bpb != null && $request->tipe == 'bpb') {
+
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            $bpb->update([
+                'approved_by_status' => 'Returned',
+                'approved_by_date' => $formattedDate,
+                'status' => 'Returned',
+                'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $bpb
             ],200);
         }
 

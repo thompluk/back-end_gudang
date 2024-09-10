@@ -150,6 +150,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
       // * BuktiPengeluaranBarang
     Route::get('/allbpb', [BuktiPengeluaranBarangController::class, 'index'])->name('bpb.index');
+    Route::get('/allbpbumum', [BuktiPengeluaranBarangController::class, 'indexbpbumum'])->name('po.indexbpbumum');
     Route::get('/allbpb/draft', [BuktiPengeluaranBarangController::class, 'indexDraft'])->name('bpb.indexDraft');
     Route::get('/allbpb/onApproval', [BuktiPengeluaranBarangController::class, 'indexOnApproval'])->name('bpb.indexOnApproval');
     Route::get('/allbpb/done', [BuktiPengeluaranBarangController::class, 'indexDone'])->name('bpb.indexDone');
@@ -169,6 +170,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/bpbdetail/update/{id}', [BuktiPengeluaranBarangDetailController::class, 'update'])->name('bpbdetail.update');
     Route::delete('/bpbdetail/{id}', [BuktiPengeluaranBarangDetailController::class, 'destroy'])->name('bpbdetail.destroy');
     Route::post('/bpbsaveAll/{bpb_id}', [BuktiPengeluaranBarangDetailController::class, 'saveAll'])->name('bpbdetail.saveAll');
+    Route::post('/bpbdetail/deliver/{id}', [BuktiPengeluaranBarangDetailController::class, 'deliver'])->name('bpbdetail.deliver');
 
     // * Approval
     Route::get('/allindexApproval', [ApprovalController::class, 'indexApproval'])->name('indexApproval');

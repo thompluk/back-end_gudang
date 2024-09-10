@@ -19,7 +19,10 @@ return new class extends Migration
             $table->string('no_edp')->nullable();
             $table->string('no_sn')->nullable();
             $table->integer('quantity')->nullable();
+            $table->date('delivery_date')->nullable();
             $table->text('notes')->nullable();
+            $table->boolean('is_partial_delivery')->nullable();
+            $table->boolean('is_delivered')->nullable();
 
             $table->foreign('bpb_id')->references('id')->on('bukti_pengeluaran_barang')->onDelete('cascade');
             

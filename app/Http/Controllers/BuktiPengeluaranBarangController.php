@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BuktiPengeluaranBarang;
+use App\Models\BuktiPengeluaranBarangDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ class BuktiPengeluaranBarangController extends Controller
         ], 200);
     }
 
-    public function indexpoumum()
+    public function indexbpbumum()
     {
         $bpb = BuktiPengeluaranBarang::orderBy('date')->where('status', 'Done')->get();
 
@@ -108,9 +109,9 @@ class BuktiPengeluaranBarangController extends Controller
             ], 404);
         } else {
             $bpb->update([
+                'salesman'=>$request->salesman,
                 'no_po'=>$request->no_po,
                 'delivery_by'=>$request->delivery_by,
-                'delivery_date'=>$request->delivery_date,
                 'customer'=>$request->customer,
                 'customer_address'=>$request->customer_address,
                 'customer_pic_name'=>$request->customer_pic_name,
@@ -159,11 +160,11 @@ class BuktiPengeluaranBarangController extends Controller
         $bpb = BuktiPengeluaranBarang::create([
             'no_bpb'=>$no_bpb,
             'status'=>'Draft',
+            'delivery_status' => null,
             'salesman'=>$request->salesman,
             'date'=>$formattedDate,
             'no_po'=>$request->no_po,
             'delivery_by'=>$request->delivery_by,
-            'delivery_date'=>$request->delivery_date,
             'customer'=>$request->customer,
             'customer_address'=>$request->customer_address,
             'customer_pic_name'=>$request->customer_pic_name,
@@ -212,5 +213,58 @@ class BuktiPengeluaranBarangController extends Controller
     });
     }
 
+    public function post($id)
+    {
+
+        $bpb = BuktiPengeluaranBarang::find($id);
+        $bpb_detail = BuktiPengeluaranBarangDetail::where('bpb_id', $id)->get();
+
+        if ($bpb == null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bukti Pengeluaran Barang not found!',
+                'data' => $bpb
+            ], 404);
+        }
+
+        if (count($bpb_detail) == 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item Bukti Pengeluaran Barang minimal 1 item!',
+                'data' => $bpb_detail
+            ], 404);
+        }
+
+        if( $bpb->salesman == null || $bpb->no_po == null || $bpb->delivery_by == null  || $bpb->customer == null ||
+            $bpb->customer_address == null || $bpb->customer_pic_name == null || $bpb->customer_pic_phone == null || $bpb->approved_by == null){
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak boleh ada data Bukti Pengeluaran Barang yang kosong'
+            ], 400);
+        
+        }
+        foreach($bpb_detail as $item){
+            if($item->bpb_id == null || $item->item_name == null || $item->no_edp == null || $item->no_sn == null 
+                || $item->quantity == null || $item->delivery_date == null){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak boleh ada data Item yang kosong'
+                ], 400);
+            }
+        }
+    
+        $bpb->update([
+            'status'=>'On Approval',
+            'approved_by_status'=>'Waiting for Confirmation',
+            'approved_by_date'=>null,
+            'remarks'=>null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bukti Pengeluaran Barang updated successfully!',
+            'data' => $bpb
+        ], 200);
+    }
 
 }

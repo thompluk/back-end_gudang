@@ -13,11 +13,11 @@ class BuktiPengeluaranBarang extends Model
     protected $fillable = [
         'id',
         'status',
+        'delivery_status',
         'salesman',
         'date',
         'no_po',
         'delivery_by',
-        'delivery_date',
         'no_bpb',
         'customer',
         'customer_address',

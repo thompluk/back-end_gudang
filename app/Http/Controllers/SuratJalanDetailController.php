@@ -22,13 +22,21 @@ class SuratJalanDetailController extends Controller
     public function showbysuratjalanid($surat_jalan_id)
     {
         $surat_jalan_detail = SuratJalanDetail::where('surat_jalan_id', $surat_jalan_id)->get();
+
+        if(count($surat_jalan_detail) == 0){
+            return response()->json([
+                'success' => false,
+                'message' => 'Surat Jalan Detail not found!',
+                'data' => $surat_jalan_detail
+            ], 404);
+        }
+
         foreach ($surat_jalan_detail as $item) {
             if ($item->is_dikembalikan == 1) {
                 $item->is_dikembalikan = '1';
             }else if ($item->is_dikembalikan == 0) {
                 $item->is_dikembalikan = '0';
             }
-            
         }
 
         return response()->json([

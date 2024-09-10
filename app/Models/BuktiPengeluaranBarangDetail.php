@@ -19,7 +19,10 @@ class BuktiPengeluaranBarangDetail extends Model
         'no_edp',
         'no_sn',
         'quantity',
+        'delivery_date',
         'notes',
+        'is_partial_delivery',
+        'is_delivered',
         'updated_at',
         'created_at',
     ];

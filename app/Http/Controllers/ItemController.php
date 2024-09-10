@@ -30,19 +30,19 @@ class ItemController extends Controller
         if (!empty($ids)) {
             
             $item = Item::
-            // whereNotIn('id', function($query) {
-            //     $query->select('item_id')->where('item_id', '!=', null)
-            //         ->from('bukti_pengeluaran_barang');
-            // })->
+            whereNotIn('id', function($query) {
+                $query->select('item_id')->where('item_id', '!=', null)
+                    ->from('bukti_pengeluaran_barang_detail');
+            })->
             where('is_in_stock', true)
             ->whereNotIn('id', $ids)
             ->get();
         } else {
             $item = Item::
-            // whereNotIn('id', function($query) {
-            //     $query->select('item_id')->where('item_id', '!=', null)
-            //         ->from('bukti_pengeluaran_barang');
-            // })
+            whereNotIn('id', function($query) {
+                $query->select('item_id')->where('item_id', '!=', null)
+                    ->from('bukti_pengeluaran_barang_detail');
+            })->
             where('is_in_stock', true)
             ->get();
         }
