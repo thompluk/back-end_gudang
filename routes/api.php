@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/notAuthenticated', [AuthController::class, 'notAuthenticated'])->name('notAuthenticated');
 Route::post('/createuser', [UserController::class, 'createuser'])->name('user.createuser');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-
+Route::get('/allusertestserver', [UserController::class, 'index'])->name('user.index');
 
 
 
