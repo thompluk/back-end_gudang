@@ -39,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user', [UserController::class, 'createuser'])->name('user.createuser');
     Route::put('/user/update/{id}', [UserController::class, 'update'])->name('user.update');
     Route::delete('/user/{id}', [UserController::class, 'destroy'])->name('user.destroy');
+    Route::post('/user/upload-excel', [UserController::class, 'upload'])->name('user.upload');
+    Route::get('/user-download-template', [UserController::class, 'downloadTemplate'])->name('user.downloadTemplate');
 
     // * Prinsipal
     Route::get('/allprinsipal', [PrinsipalController::class, 'index'])->name('prinsipal.index');
@@ -66,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/ppb/post/{id}', [PermintaanPembelianBarangController::class, 'post'])->name('ppb.post');
     Route::put('/ppb/update/{id}', [PermintaanPembelianBarangController::class, 'update'])->name('ppb.update');
     Route::delete('/ppb/{id}', [PermintaanPembelianBarangController::class, 'destroy'])->name('ppb.destroy');
+    Route::get('/ppbdashboard', [PermintaanPembelianBarangController::class, 'indexDashboard'])->name('ppb.indexDashboard');
 
      // * PermintaanPembelianBarangDetail
      Route::get('/allppbdetail', [PermintaanPembelianBarangDetailController::class, 'index'])->name('ppbdetail.index');
@@ -91,6 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/po/update/{id}', [PurchaseOrderController::class, 'update'])->name('po.update');
     Route::delete('/po/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
     Route::get('/po/arrivalData/{id}', [PurchaseOrderController::class, 'arrivalData'])->name('po.arrivalData');
+    Route::get('/podashboard', [PurchaseOrderController::class, 'indexDashboard'])->name('po.indexDashboard');
 
      // * Purchase Order Detail
      Route::get('/allpodetail', [PurchaseOrderDetailController::class, 'index'])->name('podetail.index');
@@ -109,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::put('/allstockitem/update/{id}', [StockItemController::class, 'update'])->name('stockitem.update');
     Route::delete('/stockitem/{id}', [StockItemController::class, 'destroy'])->name('stockitem.destroy');
     Route::post('/stockitemSelect', [StockItemController::class, 'stockitemSelect'])->name('stockitem.stockitemSelect');
+    Route::get('/stockitemdashboard', [StockItemController::class, 'indexDashboard'])->name('stockitem.indexDashboard');
 
     // * Stock Material
     Route::get('/allstockmaterial', [StockMaterialController::class, 'index'])->name('stockmaterial.index');
@@ -173,6 +178,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/bpbdetail/deliver/{id}', [BuktiPengeluaranBarangDetailController::class, 'deliver'])->name('bpbdetail.deliver');
 
     // * Approval
+    Route::get('/allindexApprovalRecord', [ApprovalController::class, 'indexRecord'])->name('indexRecord');
     Route::get('/allindexApproval', [ApprovalController::class, 'indexApproval'])->name('indexApproval');
     Route::post('/approval/approve', [ApprovalController::class, 'approve'])->name('approve');
     Route::post('/approval/reject', [ApprovalController::class, 'reject'])->name('reject');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApprovalRecord;
 use App\Models\BuktiPengeluaranBarang;
 use App\Models\PermintaanPembelianBarang;
 use App\Models\PurchaseOrder;
@@ -57,6 +58,42 @@ class ApprovalController extends Controller
         ], 200);
     }
 
+    public function indexRecord(){
+
+        $approvalRecord = ApprovalRecord::orderBy('date')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Approval Record successfully retrieved!',
+            'data' => $approvalRecord
+        ], 200);
+    } 
+
+    private function createRecord($no, $date, $type, $requestor, $requestor_id, $approver, $approver_id, $action, $remarks)
+    {
+        $approvalRecord = ApprovalRecord::create([
+            'no' => $no,
+            'date' => $date,
+            'type' => $type,
+            'requestor' => $requestor,
+            'requestor_id' => $requestor_id,
+            'approver' => $approver,
+            'approver_id' => $approver_id,
+            'action' => $action,
+            'remarks' => $remarks,
+
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Prinsipal successfully created!',
+            'data' => $approvalRecord
+        ], 200);
+        
+
+        return $approvalRecord;
+    }
+
     public function approve(Request $request){
 
         if($request->tipe == 'ppb'){
@@ -73,7 +110,11 @@ class ApprovalController extends Controller
             $ppb = null;
         }
 
+        $user = Auth::user();
+
         if ($ppb !== null && $request->tipe == 'ppb') {
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Approved',
@@ -90,6 +131,14 @@ class ApprovalController extends Controller
                     'status' => 'Done',
                 ]);
             }
+
+            $record = $this->createRecord($ppb->no_ppb, $formattedDate, 'ppb', $ppb->pemohon, $ppb->pemohon_id, $user->name, $user->id, 'Approved', $request->remarks);
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $ppb,
+                'data2' => $record
+            ],200);
         }
 
         if ($po !== null && $request->tipe == 'po') {
@@ -116,6 +165,7 @@ class ApprovalController extends Controller
                         'purchasing_status' => 'Approved',
                     ]);
                 }
+
             }elseif($po->verified_by_status == 'Waiting for Confirmation'){
                 $po->update([
                     'verified_by_status' => 'Approved',
@@ -138,6 +188,14 @@ class ApprovalController extends Controller
                     ]);
                 }
             }
+
+            $record = $this->createRecord($po->no_po, $formattedDate, 'po', $po->prepared_by, $po->prepared_by_id, $user->name, $user->id, 'Approved', $request->remarks);
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $po,
+                'data2' => $record
+            ],200);
         }
 
         if ($bpb !== null && $request->tipe == 'bpb') {
@@ -150,7 +208,15 @@ class ApprovalController extends Controller
                 'status' => 'Done',
                 'delivery_status' => 'Awaiting Delivery',
             ]);
+
+            $record = $this->createRecord($bpb->no_bpb, $formattedDate, 'bpb', $bpb->request_by, $bpb->request_by_id, $user->name, $user->id, 'Approved', $request->remarks);
             
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $bpb,
+                'data2' => $record
+            ],200);
         }
     }
 
@@ -170,7 +236,10 @@ class ApprovalController extends Controller
             $ppb = null;
         }
 
+        $user = Auth::user();
+
         if ($ppb != null && $request->tipe == 'ppb') {
+            $formattedDate = Carbon::now()->format('Y-m-d');
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Rejected',
@@ -192,6 +261,13 @@ class ApprovalController extends Controller
                     'remarks' => $request->remarks . "\n". 'Rejected by : ' . Auth::user()->name
                 ]);
             }
+            $record = $this->createRecord($ppb->no_ppb, $formattedDate, 'ppb', $ppb->pemohon, $ppb->pemohon_id, $user->name, $user->id, 'Rejected', $request->remarks);
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $ppb,
+                'data2' => $record
+            ],200);
         }
 
         if ($po != null && $request->tipe == 'po') {
@@ -223,6 +299,15 @@ class ApprovalController extends Controller
                     'remarks' => $request->remarks . "\n". 'Rejected by : ' . Auth::user()->name
                 ]);
             }
+
+            $record = $this->createRecord($po->no_po, $formattedDate, 'po', $po->prepared_by, $po->prepared_by_id, $user->name, $user->id, 'Rejected', $request->remarks);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $po,
+                'data2' => $record
+            ],200);
         }
 
         if ($bpb != null && $request->tipe == 'bpb') {
@@ -236,6 +321,14 @@ class ApprovalController extends Controller
                 'remarks' => $request->remarks . "\n". 'Rejected by : ' . Auth::user()->name
             ]);
             
+            $record = $this->createRecord($bpb->no_bpb, $formattedDate, 'bpb', $bpb->request_by, $bpb->request_by_id, $user->name, $user->id, 'Rejected', $request->remarks);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $bpb,
+                'data2' => $record
+            ],200);
         }
     }
     
@@ -255,7 +348,10 @@ class ApprovalController extends Controller
             $ppb = null;
         }
 
+        $user = Auth::user();
+
         if ($ppb != null && $request->tipe == 'ppb') {
+            $formattedDate = Carbon::now()->format('Y-m-d');
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Returned',
@@ -277,10 +373,14 @@ class ApprovalController extends Controller
                     'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
                 ]);
             }
+
+            $record = $this->createRecord($ppb->no_ppb, $formattedDate, 'ppb', $ppb->pemohon, $ppb->pemohon_id, $user->name, $user->id, 'Returned', $request->remarks);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
-                'data' => $ppb
+                'data' => $ppb,
+                'data2' => $record
             ],200);
         }
 
@@ -313,10 +413,14 @@ class ApprovalController extends Controller
                     'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
                 ]);
             }
+
+            $record = $this->createRecord($po->no_po, $formattedDate, 'po', $po->prepared_by, $po->prepared_by_id, $user->name, $user->id, 'Returned', $request->remarks);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
-                'data' => $po
+                'data' => $po,
+                'data2' => $record
             ],200);
         }
 
@@ -331,10 +435,13 @@ class ApprovalController extends Controller
                 'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
             ]);
             
+            $record = $this->createRecord($bpb->no_bpb, $formattedDate, 'bpb', $bpb->request_by, $bpb->request_by_id, $user->name, $user->id, 'Returned', $request->remarks);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
-                'data' => $bpb
+                'data' => $bpb,
+                'data2' => $record
             ],200);
         }
 

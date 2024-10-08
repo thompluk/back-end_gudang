@@ -212,4 +212,18 @@ class StockItemController extends Controller
             'data' => $stockItem,
         ], 200);
     }
+
+    public function indexDashboard()
+    {
+        // Mengambil data stock_name dan quantity saja, disortir berdasarkan updated_at paling baru
+        $stockItem = StockItem::orderBy('updated_at', 'desc')
+            ->take(10)
+            ->get(['stock_name', 'quantity']); // Pilih kolom yang ingin diambil
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Stock Item successfully retrieved!',
+            'data' => $stockItem
+        ], 200);
+    }
 }

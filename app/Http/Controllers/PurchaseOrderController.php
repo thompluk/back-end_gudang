@@ -400,4 +400,34 @@ class PurchaseOrderController extends Controller
             ], 200);
         }
     }
+
+    public function indexDashboard()
+    {
+        // Mengambil status 'on approval' dan 'done', mengelompokkan berdasarkan bulan dari updated_at
+        $po = PurchaseOrder::selectRaw('
+                COUNT(*) as total,
+                status,
+                DATE_FORMAT(tanggal, "%m") as month
+            ')
+            ->whereIn('status', ['On Approval', 'Done']) // Memfilter status
+            ->groupBy('month', 'status') // Mengelompokkan berdasarkan bulan numerik dan status
+            ->orderBy('month', 'asc') // Mengurutkan berdasarkan bulan terbaru
+            ->get();
+
+        $datas = collect([]);
+
+        foreach($po->groupBy('month') as $item){
+                $storeData['Month'] = $item->first()->month; // Nama bulan
+                $storeData['On Approval'] = $item->where('status', 'On Approval')->sum('total') ?? 0;
+                $storeData['Done'] = $item->where('status', 'Done')->sum('total') ?? 0;
+
+                $datas->add($storeData);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Purchase Order status per month retrieved successfully!',
+            'data' => $datas 
+        ], 200);
+    }
 }
