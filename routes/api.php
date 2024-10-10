@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // * PermintaanPembelianBarang
     Route::get('/allppb', [PermintaanPembelianBarangController::class, 'index'])->name('ppb.index');
+    Route::get('/allppbumum', [PermintaanPembelianBarangController::class, 'indexppbumum'])->name('ppb.indexppbumum');
     Route::get('/allppb/draft', [PermintaanPembelianBarangController::class, 'indexDraft'])->name('ppb.indexDraft');
     Route::get('/allppb/onApproval', [PermintaanPembelianBarangController::class, 'indexOnApproval'])->name('ppb.indexOnApproval');
     Route::get('/allppb/done', [PermintaanPembelianBarangController::class, 'indexDone'])->name('ppb.indexDone');
@@ -83,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
       // * Purchase Order
     Route::get('/allpo', [PurchaseOrderController::class, 'index'])->name('po.index');
     Route::get('/allpoumum', [PurchaseOrderController::class, 'indexpoumum'])->name('po.indexpoumum');
+    Route::get('/allpodelivery', [PurchaseOrderController::class, 'indexpodelivery'])->name('po.indexpodelivery');
     Route::get('/allpo/draft', [PurchaseOrderController::class, 'indexDraft'])->name('po.indexDraft');
     Route::get('/allpo/onApproval', [PurchaseOrderController::class, 'indexOnApproval'])->name('po.indexOnApproval');
     Route::get('/allpo/done', [PurchaseOrderController::class, 'indexDone'])->name('po.indexDone');
@@ -112,7 +114,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stockiteminit/{po_detail_id}', [StockItemController::class, 'stockiteminit'])->name('stockitem.stockiteminit');
     // Route::put('/allstockitem/update/{id}', [StockItemController::class, 'update'])->name('stockitem.update');
     Route::delete('/stockitem/{id}', [StockItemController::class, 'destroy'])->name('stockitem.destroy');
-    Route::post('/stockitemSelect', [StockItemController::class, 'stockitemSelect'])->name('stockitem.stockitemSelect');
+    Route::post('/stockitemselect', [StockItemController::class, 'stockitemSelect'])->name('stockitem.stockitemSelect');
     Route::get('/stockitemdashboard', [StockItemController::class, 'indexDashboard'])->name('stockitem.indexDashboard');
 
     // * Stock Material
@@ -155,7 +157,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
       // * BuktiPengeluaranBarang
     Route::get('/allbpb', [BuktiPengeluaranBarangController::class, 'index'])->name('bpb.index');
-    Route::get('/allbpbumum', [BuktiPengeluaranBarangController::class, 'indexbpbumum'])->name('po.indexbpbumum');
+    Route::get('/allbpbumum', [BuktiPengeluaranBarangController::class, 'indexbpbumum'])->name('bpb.indexbpbumum');
+    Route::get('/allbpbdelivery', [BuktiPengeluaranBarangController::class, 'indexbpbdelivery'])->name('bpb.indexbpbdelivery');
     Route::get('/allbpb/draft', [BuktiPengeluaranBarangController::class, 'indexDraft'])->name('bpb.indexDraft');
     Route::get('/allbpb/onApproval', [BuktiPengeluaranBarangController::class, 'indexOnApproval'])->name('bpb.indexOnApproval');
     Route::get('/allbpb/done', [BuktiPengeluaranBarangController::class, 'indexDone'])->name('bpb.indexDone');

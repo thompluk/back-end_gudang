@@ -26,7 +26,24 @@ class PurchaseOrderController extends Controller
 
     public function indexpoumum()
     {
-        $po = PurchaseOrder::orderBy('tanggal')->where('status', 'Done')->get();
+        $po = PurchaseOrder::orderBy('tanggal')->where('status','!=', 'Draft')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Purchase Order successfully retrieved!',
+            'data' => $po
+        ], 200);
+    }
+
+    public function indexpodelivery()
+    {
+        $userRole = Auth::user()->role;
+
+        if ($userRole == 'INVENTORY') {
+            $po = PurchaseOrder::orderBy('tanggal')->where('arrival_status', 'Awaiting Delivery')->get();
+        } else {
+            $po = [];
+        }
 
         return response()->json([
             'success' => true,

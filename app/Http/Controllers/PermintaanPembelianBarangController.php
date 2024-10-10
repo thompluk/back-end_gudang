@@ -23,6 +23,17 @@ class PermintaanPembelianBarangController extends Controller
         ], 200);
     }
 
+    public function indexppbumum()
+    {
+        $ppb = PermintaanPembelianBarang::orderBy('tanggal')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Permintaan Pembelian Barang successfully retrieved!',
+            'data' => $ppb
+        ], 200);
+    }
+
     public function indexDraft()
     {
         $ppb = PermintaanPembelianBarang::where('status', 'Draft')

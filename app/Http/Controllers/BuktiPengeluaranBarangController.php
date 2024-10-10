@@ -24,7 +24,24 @@ class BuktiPengeluaranBarangController extends Controller
 
     public function indexbpbumum()
     {
-        $bpb = BuktiPengeluaranBarang::orderBy('date')->where('status', 'Done')->get();
+        $bpb = BuktiPengeluaranBarang::orderBy('date')->where('status','!=', 'Draft')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Bukti Pengeluaran Barang successfully retrieved!',
+            'data' => $bpb
+        ], 200);
+    }
+
+    public function indexbpbdelivery()
+    {
+
+        $userRole = Auth::user()->role;
+        if ($userRole == 'INVENTORY') {
+            $bpb = BuktiPengeluaranBarang::orderBy('date')->where('delivery_status', 'Awaiting Delivery')->get();
+        } else {
+            $bpb = [];
+        }
 
         return response()->json([
             'success' => true,
