@@ -52,7 +52,9 @@ class BuktiPengeluaranBarangController extends Controller
 
     public function indexDraft()
     {
-        $bpb = BuktiPengeluaranBarang::where('status', 'Draft')
+        $user_id = Auth::user()->id;
+        $bpb = BuktiPengeluaranBarang::where('request_by_id' , $user_id)
+                                        ->where('status', 'Draft')
                                         ->orWhere('status', 'Returned')
                                         ->orderBy('date')->get();
 
@@ -64,7 +66,8 @@ class BuktiPengeluaranBarangController extends Controller
     }
     public function indexOnApproval()
     {
-        $bpb = BuktiPengeluaranBarang::where('status', 'On Approval')->orderBy('date')->get();
+        $user_id = Auth::user()->id;
+        $bpb = BuktiPengeluaranBarang::where('request_by_id' , $user_id)->where('status', 'On Approval')->orderBy('date')->get();
 
         return response()->json([
             'success' => true,
@@ -74,7 +77,8 @@ class BuktiPengeluaranBarangController extends Controller
     }
     public function indexDone()
     {
-        $bpb = BuktiPengeluaranBarang::where('status', 'Done')->orderBy('date')->get();
+        $user_id = Auth::user()->id;
+        $bpb = BuktiPengeluaranBarang::where('request_by_id' , $user_id)->where('status', 'Done')->orderBy('date')->get();
 
         return response()->json([
             'success' => true,
@@ -85,7 +89,8 @@ class BuktiPengeluaranBarangController extends Controller
 
     public function indexRejected()
     {
-        $bpb = BuktiPengeluaranBarang::where('status', 'Rejected')->orderBy('date')->get();
+        $user_id = Auth::user()->id;
+        $bpb = BuktiPengeluaranBarang::where('request_by_id' , $user_id)->where('status', 'Rejected')->orderBy('date')->get();
 
         return response()->json([
             'success' => true,

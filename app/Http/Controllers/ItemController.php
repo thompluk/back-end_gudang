@@ -115,8 +115,8 @@ class ItemController extends Controller
             // Loop melalui setiap item dan simpan atau perbarui
             foreach ($request->all() as $data) {
         
-                Item::updateOrCreate(
-                    ['id' => $data['id']], // kondisi untuk menemukan record
+                Item::create(
+                    // ['id' => $data['id']], // kondisi untuk menemukan record
                     [
                         'stock_id' => $stock_id,
                         'item_name' => $data['item_name'],

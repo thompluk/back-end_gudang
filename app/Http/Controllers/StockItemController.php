@@ -121,8 +121,7 @@ class StockItemController extends Controller
 
         foreach ($request->input('detail') as $data) {
     
-            Item::updateOrCreate(
-                ['id' => $data['id']], // kondisi untuk menemukan record
+            Item::create(
                 [
                     'stock_id' => $stock->id,
                     'item_name' => $data['item_name'],

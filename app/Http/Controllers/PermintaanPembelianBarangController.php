@@ -36,7 +36,9 @@ class PermintaanPembelianBarangController extends Controller
 
     public function indexDraft()
     {
-        $ppb = PermintaanPembelianBarang::where('status', 'Draft')
+        $user_id = Auth::user()->id;
+        $ppb = PermintaanPembelianBarang::where('pemohon_id', $user_id)
+                                        ->where('status', 'Draft')
                                         ->orWhere('status', 'Returned')
                                         ->orderBy('tanggal')->get();
 
@@ -48,7 +50,8 @@ class PermintaanPembelianBarangController extends Controller
     }
     public function indexOnApproval()
     {
-        $ppb = PermintaanPembelianBarang::where('status', 'On Approval')->orderBy('tanggal')->get();
+        $user_id = Auth::user()->id;
+        $ppb = PermintaanPembelianBarang::where('pemohon_id', $user_id)->where('status', 'On Approval')->orderBy('tanggal')->get();
 
         return response()->json([
             'success' => true,
@@ -58,7 +61,8 @@ class PermintaanPembelianBarangController extends Controller
     }
     public function indexDone()
     {
-        $ppb = PermintaanPembelianBarang::where('status', 'Done')->orderBy('tanggal')->get();
+        $user_id = Auth::user()->id;
+        $ppb = PermintaanPembelianBarang::where('pemohon_id', $user_id)->where('status', 'Done')->orderBy('tanggal')->get();
 
         return response()->json([
             'success' => true,
@@ -69,7 +73,8 @@ class PermintaanPembelianBarangController extends Controller
 
     public function indexRejected()
     {
-        $ppb = PermintaanPembelianBarang::where('status', 'Rejected')->orderBy('tanggal')->get();
+        $user_id = Auth::user()->id;
+        $ppb = PermintaanPembelianBarang::where('pemohon_id', $user_id)->where('status', 'Rejected')->orderBy('tanggal')->get();
 
         return response()->json([
             'success' => true,

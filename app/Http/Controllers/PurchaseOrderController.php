@@ -54,9 +54,10 @@ class PurchaseOrderController extends Controller
 
     public function indexDraft()
     {
-        $po = PurchaseOrder::where('status', 'Draft')
-                                        ->orWhere('status', 'Returned')
-                                        ->orderBy('tanggal')->get();
+        $user_id = Auth::user()->id;
+        $po = PurchaseOrder::where('prepared_by_id', $user_id)->where('status', 'Draft')->orWhere('status', 'Returned')
+                                        ->orderBy('tanggal')
+                                        ->get();
 
         return response()->json([
             'success' => true,
@@ -66,7 +67,8 @@ class PurchaseOrderController extends Controller
     }
     public function indexOnApproval()
     {
-        $po = PurchaseOrder::where('status', 'On Approval')->orderBy('tanggal')->get();
+        $user_id = Auth::user()->id;
+        $po = PurchaseOrder::where('status', 'On Approval')->where('prepared_by_id', $user_id)->orderBy('tanggal')->get();
 
         return response()->json([
             'success' => true,
@@ -76,7 +78,8 @@ class PurchaseOrderController extends Controller
     }
     public function indexDone()
     {
-        $po = PurchaseOrder::where('status', 'Done')->orderBy('tanggal')->get();
+        $user_id = Auth::user()->id;
+        $po = PurchaseOrder::where('status', 'Done')->where('prepared_by_id', $user_id)->orderBy('tanggal')->get();
 
         return response()->json([
             'success' => true,
@@ -87,7 +90,8 @@ class PurchaseOrderController extends Controller
 
     public function indexRejected()
     {
-        $po = PurchaseOrder::where('status', 'Rejected')->orderBy('tanggal')->get();
+        $user_id = Auth::user()->id;
+        $po = PurchaseOrder::where('status', 'Rejected')->where('prepared_by_id', $user_id)->orderBy('tanggal')->get();
 
         return response()->json([
             'success' => true,
@@ -342,34 +346,34 @@ class PurchaseOrderController extends Controller
     }
 
     public function arrivalData($id){
-        $po = PurchaseOrder::find($id);
-        $po_detail = PurchaseOrderDetail::where('po_id', $id)->where('is_items_created', 0)->get();
-        $detail_length = count($po_detail);
+        // $po = PurchaseOrder::find($id);
+        // $po_detail = PurchaseOrderDetail::where('po_id', $id)->where('is_items_created', 0)->get();
+        // $detail_length = count($po_detail);
+
+        $po_detail = PurchaseOrderDetail::find($id);
+        $po = PurchaseOrder::find($po_detail->po_id);
 
         $formattedDate = Carbon::now()->format('Y-m-d');
         $receiver = Auth::user()->name;
         $receiver_id = Auth::user()->id;
-
-        $data = [];
         
-
-        foreach($po_detail as $item){
+        for($i=0; $i<$po_detail->quantity; $i++){
             $data[] = [
-                'po_detail_id' => $item->id,
-                'item_name' => $item->item,
+                'po_detail_id' => $po_detail->id,
+                'item_name' => $po_detail->item,
                 'no_po' => $po->no_po,
-                'no_ppb' => $item->no_ppb,
+                'no_ppb' => $po_detail->no_ppb,
                 'arrival_date' => $formattedDate,
-                'description' => $item->description,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->unit_price,
-                'remarks' => $item->remarks,
-                'item_unit' => $item->item_unit,
+                'description' => $po_detail->description,
+                'quantity' => $po_detail->quantity,
+                'unit_price' => $po_detail->unit_price,
+                'remarks' => $po_detail->remarks,
+                'item_unit' => $po_detail->item_unit,
                 'arrival_date'=>$formattedDate,
                 'receiver'=>$receiver,
                 'receiver_id'=>$receiver_id,
-                'detail_length' => $detail_length,
-            ];
+                // 'detail_length' => $detail_length,
+            ];    
         }
 
         // $data = [
@@ -391,6 +395,12 @@ class PurchaseOrderController extends Controller
     {
 
         $po = PurchaseOrder::find($id);
+        $po_detail = PurchaseOrderDetail::where('po_id', $id)->where('is_items_created', 0)->get();
+        if(count($po_detail) != 0){
+            return response()->json([
+                'success' => false,
+            ]);
+        }
 
         $formattedDate = Carbon::now()->format('Y-m-d');
         $receiver = Auth::user()->name;
