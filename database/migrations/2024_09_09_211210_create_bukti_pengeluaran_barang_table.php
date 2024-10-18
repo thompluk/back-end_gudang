@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('bukti_pengeluaran_barang', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('status')->nullable();
-            $table->string('delivery_status')->nullable();
             $table->string('salesman')->nullable();
             $table->date('date')->nullable();
             $table->string('no_po')->nullable();
             $table->string('delivery_by')->nullable();
+            $table->date('delivery_date')->nullable();
+            $table->boolean('is_partial_delivery')->nullable();
             $table->string('no_bpb')->nullable();
             $table->string('customer')->nullable();
             $table->string('customer_address')->nullable();

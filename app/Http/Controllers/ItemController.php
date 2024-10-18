@@ -23,7 +23,7 @@ class ItemController extends Controller
         ], 200);
     }
 
-    public function itemSelect(Request $request)
+    public function itemSelect(Request $request, $filter)
     {
         $ids = $request->input('item_ids');
 
@@ -32,18 +32,20 @@ class ItemController extends Controller
             $item = Item::
             whereNotIn('id', function($query) {
                 $query->select('item_id')->where('item_id', '!=', null)
-                    ->from('bukti_pengeluaran_barang_detail');
-            })->
-            where('is_in_stock', true)
+                    ->from('bukti_pengeluaran_barang_detail_detail');
+            })
+            ->where('stock_id', $filter)
+            ->where('is_in_stock', true)
             ->whereNotIn('id', $ids)
             ->get();
         } else {
             $item = Item::
             whereNotIn('id', function($query) {
                 $query->select('item_id')->where('item_id', '!=', null)
-                    ->from('bukti_pengeluaran_barang_detail');
-            })->
-            where('is_in_stock', true)
+                    ->from('bukti_pengeluaran_barang_detail_detail');
+            })
+            ->where('stock_id', $filter)
+            ->where('is_in_stock', true)
             ->get();
         }
 

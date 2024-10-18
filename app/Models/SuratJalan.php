@@ -12,8 +12,8 @@ class SuratJalan extends Model
 
     protected $fillable = [
         'id',
+        'no_surat_jalan',
         'status',
-        'status_pengiriman',
         'company_id',
         'company',
         'menyerahkan_id',
@@ -23,8 +23,6 @@ class SuratJalan extends Model
         'mengetahui',
         'mengetahui_status',
         'mengetahui_date',
-        'menerima',
-        'menerima_date',
         'remarks',
         'updated_at',
         'created_at',

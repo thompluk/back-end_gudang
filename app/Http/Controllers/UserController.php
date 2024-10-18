@@ -28,10 +28,24 @@ class UserController extends Controller
 
     public function userSelect()
     {
-        $currentUserId = auth()->id();
+        $currentUserId = Auth::user()->id;
 
         // Mengambil semua pengguna kecuali pengguna yang sedang login
         $users = User::where('id', '!=', $currentUserId)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User data successfully retrieved!',
+            'data' => $users
+        ], 200);
+    }
+
+    public function userSelectInventory()
+    {
+        $currentUserId = Auth::user()->id;
+
+        // Mengambil semua pengguna kecuali pengguna yang sedang login
+        $users = User::where('id', '!=', $currentUserId)->where('role', 'INVENTORY')->get();
 
         return response()->json([
             'success' => true,

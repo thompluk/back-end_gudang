@@ -14,12 +14,9 @@ class SuratJalanDetail extends Model
     protected $fillable = [
         'id',
         'surat_jalan_id',
-        'stock_item_id',
-        // 'no_edp',
-        // 'no_sn',
+        'stock_material_id',
         'nama_barang',
         'quantity',
-        'is_dikembalikan',
         'keterangan',
         'created_at',
         'updated_at',

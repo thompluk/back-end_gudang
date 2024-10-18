@@ -52,10 +52,10 @@ class SuratJalanDetailController extends Controller
         $validation = Validator::make(
             $request->all(),
             [
-                'stock_item_id' => 'required',
+                'stock_material_id' => 'required',
             ],
             [
-                'stock_item_id.required' => 'Item wajib diisi!',
+                'stock_material_id.required' => 'Item wajib diisi!',
             ]
         );
 
@@ -67,7 +67,7 @@ class SuratJalanDetailController extends Controller
         }
 
         $surat_jalan_detail = SuratJalanDetail::create([
-            'ppb_id' => $request->stock_item_id,
+            'ppb_id' => $request->stock_material_id,
         ]);
 
         return response()->json([
@@ -103,10 +103,10 @@ class SuratJalanDetailController extends Controller
         $request->validate([
             // '*.no_edp' => 'nullable|string',
             // '*.no_sn' => 'nullable|string',
-            '*.stock_item_id' => 'nullable|integer',
+            '*.stock_material_id' => 'nullable|integer',
             '*.nama_barang' => 'nullable|string',
             '*.quantity' => 'nullable|integer',
-            '*.is_dikembalikan' => 'nullable|boolean',
+            // '*.is_dikembalikan' => 'nullable|boolean',
             '*.keterangan' => 'nullable|string',
         ]);
 
@@ -117,12 +117,12 @@ class SuratJalanDetailController extends Controller
                 ['id' => $data['id']], // kondisi untuk menemukan record
                 [
                     'surat_jalan_id' => $surat_jalan_id,
-                    'stock_item_id' => $data['stock_item_id'],
+                    'stock_material_id' => $data['stock_material_id'],
                     // 'no_edp' => $data['no_edp'],
                     // 'no_sn' => $data['no_sn'],
                     'nama_barang' => $data['nama_barang'],
                     'quantity' => $data['quantity'],
-                    'is_dikembalikan' => $data['is_dikembalikan'] ,
+                    // 'is_dikembalikan' => $data['is_dikembalikan'] ,
                     'keterangan' => $data['keterangan'],
                 ]
             );

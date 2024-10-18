@@ -13,11 +13,12 @@ class BuktiPengeluaranBarang extends Model
     protected $fillable = [
         'id',
         'status',
-        'delivery_status',
         'salesman',
         'date',
         'no_po',
         'delivery_by',
+        'delivery_date',
+        'is_partial_delivery',
         'no_bpb',
         'customer',
         'customer_address',
@@ -38,5 +39,9 @@ class BuktiPengeluaranBarang extends Model
     public function buktiPengeluaranBarangDetail()
     {
         return $this->hasMany(BuktiPengeluaranBarangDetail::class, 'bpb_id', 'id');
+    }
+    public function buktiPengeluaranBarangDetailDetail()
+    {
+        return $this->hasMany(BuktiPengeluaranBarangDetailDetail::class, 'bpb_id', 'id');
     }
 }

@@ -25,7 +25,7 @@ class PermintaanPembelianBarangController extends Controller
 
     public function indexppbumum()
     {
-        $ppb = PermintaanPembelianBarang::orderBy('tanggal')->get();
+        $ppb = PermintaanPembelianBarang::orderBy('tanggal')->where('status','!=', 'Draft')->get();
 
         return response()->json([
             'success' => true,

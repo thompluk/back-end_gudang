@@ -4,6 +4,7 @@ use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BuktiPengeluaranBarangController;
 use App\Http\Controllers\BuktiPengeluaranBarangDetailController;
+use App\Http\Controllers\BuktiPengeluaranBarangDetailDetailController;
 use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PermintaanPembelianBarangController;
@@ -35,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // * User
     Route::get('/alluser', [UserController::class, 'index'])->name('user.index');
     Route::post('/userSelect', [UserController::class, 'userSelect'])->name('user.userSelect');
+    Route::post('/userSelectInventory', [UserController::class, 'userSelectInventory'])->name('user.userSelectInventory');
     Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
     Route::post('/user', [UserController::class, 'createuser'])->name('user.createuser');
     Route::put('/user/update/{id}', [UserController::class, 'update'])->name('user.update');
@@ -128,7 +130,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // * Item
     Route::get('/allitem', [ItemController::class, 'index'])->name('item.index');
-    Route::post('/itemselect', [ItemController::class, 'itemSelect'])->name('item.itemSelect');
+    Route::post('/itemselect/{filter}', [ItemController::class, 'itemSelect'])->name('item.itemSelect');
     // Route::get('/stockitem/{id}', [StockItemController::class, 'show'])->name('stockitem.show');
     // Route::post('/stockitem', [StockItemController::class, 'create'])->name('stockitem.create');
     Route::get('/itembystock/{id}', [ItemController::class, 'showbystockid'])->name('item.showbystockid');
@@ -138,6 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // * Surat Jalan
     Route::get('/allsuratjalan', [SuratJalanController::class, 'index'])->name('suratjalan.index');
+    Route::get('/allsuratjalanumum', [SuratJalanController::class, 'indexsuratjalanumum'])->name('suratjalan.indexsuratjalanumum');
     Route::get('/allsuratjalan/draft', [SuratJalanController::class, 'indexDraft'])->name('suratjalan.indexDraft');
     Route::get('/allsuratjalan/onApproval', [SuratJalanController::class, 'indexOnApproval'])->name('suratjalan.indexOnApproval');
     Route::get('/allsuratjalan/done', [SuratJalanController::class, 'indexDone'])->name('suratjalan.indexDone');
@@ -166,6 +169,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bpb/{id}', [BuktiPengeluaranBarangController::class, 'show'])->name('bpb.show');
     Route::post('/bpb', [BuktiPengeluaranBarangController::class, 'create'])->name('bpb.create');
     Route::post('/bpb/post/{id}', [BuktiPengeluaranBarangController::class, 'post'])->name('bpb.post');
+    Route::post('/bpb/postToOutsanding/{id}', [BuktiPengeluaranBarangController::class, 'postToOutstanding'])->name('bpb.postToOutstanding');
     Route::put('/bpb/update/{id}', [BuktiPengeluaranBarangController::class, 'update'])->name('bpb.update');
     Route::delete('/bpb/{id}', [BuktiPengeluaranBarangController::class, 'destroy'])->name('bpb.destroy');
 
@@ -177,8 +181,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/bpbdetail', [BuktiPengeluaranBarangDetailController::class, 'create'])->name('bpbdetail.create');
     Route::put('/bpbdetail/update/{id}', [BuktiPengeluaranBarangDetailController::class, 'update'])->name('bpbdetail.update');
     Route::delete('/bpbdetail/{id}', [BuktiPengeluaranBarangDetailController::class, 'destroy'])->name('bpbdetail.destroy');
-    Route::post('/bpbsaveAll/{bpb_id}', [BuktiPengeluaranBarangDetailController::class, 'saveAll'])->name('bpbdetail.saveAll');
+    Route::post('/bpbdetailsaveAll/{bpb_id}', [BuktiPengeluaranBarangDetailController::class, 'saveAll'])->name('bpbdetail.saveAll');
     Route::post('/bpbdetail/deliver/{id}', [BuktiPengeluaranBarangDetailController::class, 'deliver'])->name('bpbdetail.deliver');
+
+     // * BuktiPengeluaranBarangDetailDetail
+     Route::get('/allbpbdetaildetail', [BuktiPengeluaranBarangDetailDetailController::class, 'index'])->name('bpbdetaildetail.index');
+     Route::post('/bpbDetailDetailSelect', [BuktiPengeluaranBarangDetailDetailController::class, 'bpbDetailSelect'])->name('bpbdetaildetail.bpbDetailSelect');
+     Route::get('/bpbdetaildetaillist/{id}', [BuktiPengeluaranBarangDetailDetailController::class, 'showbybpbid'])->name('bpbdetaildetail.showbybpbid');
+     Route::get('/bpbdetaildetail/{id}', [BuktiPengeluaranBarangDetailDetailController::class, 'show'])->name('bpbdetaildetail.show');
+     Route::post('/bpbdetaildetail', [BuktiPengeluaranBarangDetailDetailController::class, 'create'])->name('bpbdetaildetail.create');
+     Route::put('/bpbdetaildetail/update/{id}', [BuktiPengeluaranBarangDetailDetailController::class, 'update'])->name('bpbdetaildetail.update');
+     Route::delete('/bpbdetaildetail/{id}', [BuktiPengeluaranBarangDetailDetailController::class, 'destroy'])->name('bpbdetaildetail.destroy');
+     Route::post('/bpbdetaildetailsaveAll/{bpb_id}', [BuktiPengeluaranBarangDetailDetailController::class, 'saveAll'])->name('bpbdetaildetail.saveAll');
+     Route::post('/bpbdetail/deliver/{id}', [BuktiPengeluaranBarangDetailDetailController::class, 'deliver'])->name('bpbdetaildetail.deliver');
 
     // * Approval
     Route::get('/allindexApprovalRecord', [ApprovalController::class, 'indexRecord'])->name('indexRecord');

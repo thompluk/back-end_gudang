@@ -41,7 +41,7 @@ class StockMaterialController extends Controller
         }
     } 
 
-    public function stockmaterialinit($po_detail_id)
+    public function stockmaterialinit(Request $request, $po_detail_id)
     {
         
         $po_detail = PurchaseOrderDetail::find($po_detail_id);
@@ -64,19 +64,26 @@ class StockMaterialController extends Controller
             ]);
         }
 
-        $stock = StockMaterial::create([
-            'stock_name' => $po_detail->item,
-            'quantity' => $po_detail->quantity,
-            'no_ppb' => $po_detail->no_ppb,
-            'no_po' => $po->no_po,
-            'description' => $po_detail->description,
-            'unit_price' => $po_detail->unit_price,
-            'remarks' => $po_detail->remarks,
-            'item_unit' => $po_detail->item_unit,
-            'arrival_date' => $formattedDate,
-            'receiver' => $receiver,
-            'receiver_id' => $receiver_id,
-        ]);
+        if ($request->is_stock_exist == 'ya') {
+            $stock = StockMaterial::find($request->stock_id);
+            $stock->update([
+                'quantity' => $stock->quantity + $po_detail->quantity,
+            ]);
+        }else{
+            $stock = StockMaterial::create([
+                'stock_name' => $po_detail->item,
+                'quantity' => $po_detail->quantity,
+                'no_ppb' => $po_detail->no_ppb,
+                'no_po' => $po->no_po,
+                'description' => $po_detail->description,
+                'unit_price' => $po_detail->unit_price,
+                'remarks' => $po_detail->remarks,
+                'item_unit' => $po_detail->item_unit,
+                'arrival_date' => $formattedDate,
+                'receiver' => $receiver,
+                'receiver_id' => $receiver_id,
+            ]);
+        }
 
 
         return response()->json([

@@ -194,7 +194,7 @@ class StockItemController extends Controller
 
     public function stockItemSelect(Request $request)
     {
-        $ids = $request->input('stock_detail_ids');
+        $ids = $request->input('stock_ids');
 
         // $ppb_detail_id = PurchaseOrderDetail::select('ppb_detail_id')->where('ppb_detail_id', '!=', null)->get();
 

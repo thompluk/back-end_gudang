@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BuktiPengeluaranBarang;
 use App\Models\BuktiPengeluaranBarangDetail;
+use App\Models\BuktiPengeluaranBarangDetailDetail;
+use App\Models\StockItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +40,7 @@ class BuktiPengeluaranBarangController extends Controller
 
         $userRole = Auth::user()->role;
         if ($userRole == 'INVENTORY') {
-            $bpb = BuktiPengeluaranBarang::orderBy('date')->where('delivery_status', 'Awaiting Delivery')->get();
+            $bpb = BuktiPengeluaranBarang::orderBy('date')->where('status', 'Awaiting Warehouse Confirmation')->get();
         } else {
             $bpb = [];
         }
@@ -134,6 +136,8 @@ class BuktiPengeluaranBarangController extends Controller
                 'salesman'=>$request->salesman,
                 'no_po'=>$request->no_po,
                 'delivery_by'=>$request->delivery_by,
+                'delivery_date'=>$request->delivery_date,
+                'is_partial_delivery'=>$request->is_partial_delivery,
                 'customer'=>$request->customer,
                 'customer_address'=>$request->customer_address,
                 'customer_pic_name'=>$request->customer_pic_name,
@@ -187,6 +191,8 @@ class BuktiPengeluaranBarangController extends Controller
             'date'=>$formattedDate,
             'no_po'=>$request->no_po,
             'delivery_by'=>$request->delivery_by,
+            'delivery_date'=>$request->delivery_date,
+            'is_partial_delivery'=>$request->is_partial_delivery,
             'customer'=>$request->customer,
             'customer_address'=>$request->customer_address,
             'customer_pic_name'=>$request->customer_pic_name,
@@ -194,8 +200,8 @@ class BuktiPengeluaranBarangController extends Controller
             'request_by'=>$request_by,
             'request_by_id'=>$request_by_id,
             'request_by_date'=>$formattedDate,
-            'approved_by' => null,
-            'approved_by_id' => null,
+            'approved_by' => $request->approved_by,
+            'approved_by_id' => $request->approved_by_id,
             'approved_by_date' => null,
             'approved_by_status' => null,
             'remarks' => null,
@@ -257,7 +263,7 @@ class BuktiPengeluaranBarangController extends Controller
             ], 404);
         }
 
-        if( $bpb->salesman == null || $bpb->no_po == null || $bpb->delivery_by == null  || $bpb->customer == null ||
+        if( $bpb->salesman == null || $bpb->no_po == null || $bpb->delivery_by == null || $bpb->delivery_date == null || $bpb->is_partial_delivery == null  || $bpb->customer == null ||
             $bpb->customer_address == null || $bpb->customer_pic_name == null || $bpb->customer_pic_phone == null || $bpb->approved_by == null){
             return response()->json([
                 'success' => false,
@@ -265,18 +271,100 @@ class BuktiPengeluaranBarangController extends Controller
             ], 400);
         
         }
+
         foreach($bpb_detail as $item){
-            if($item->bpb_id == null || $item->item_name == null || $item->no_edp == null || $item->no_sn == null 
-                || $item->quantity == null || $item->delivery_date == null){
+            if($item->bpb_id == null || $item->stock_name == null || $item->quantity == null){
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak boleh ada data Item yang kosong'
                 ], 400);
             }
         }
+
+        foreach($bpb_detail as $item){
+            for ($i = 0; $i < $item->quantity; $i++) {
+                BuktiPengeluaranBarangDetailDetail::create([
+                    'ppb_id'=>$item->ppb_id,
+                    'ppb_detail_id'=>$item->id,
+                ]);
+            }
+        }
     
         $bpb->update([
             'status'=>'On Approval',
+            'approved_by_status'=>'Waiting for Confirmation',
+            'approved_by_date'=>null,
+            'remarks'=>null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bukti Pengeluaran Barang updated successfully!',
+            'data' => $bpb
+        ], 200);
+    }
+
+    public function postToOutstanding($id)
+    {
+
+        $bpb = BuktiPengeluaranBarang::find($id);
+        $bpb_detail = BuktiPengeluaranBarangDetail::where('bpb_id', $id)->get();
+
+        if ($bpb == null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bukti Pengeluaran Barang not found!',
+                'data' => $bpb
+            ], 404);
+        }
+
+        if (count($bpb_detail) == 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item Bukti Pengeluaran Barang minimal 1 item!',
+                'data' => $bpb_detail
+            ], 404);
+        }
+
+        if( $bpb->salesman == null || $bpb->no_po == null || $bpb->delivery_by == null || $bpb->delivery_date == null || $bpb->customer == null ||
+            $bpb->customer_address == null || $bpb->customer_pic_name == null || $bpb->customer_pic_phone == null || $bpb->approved_by == null){
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak boleh ada data Bukti Pengeluaran Barang yang kosong',
+                'data' => $bpb,
+            ], 400);
+        
+        }
+
+        foreach($bpb_detail as $item){
+            if($item->bpb_id == null || $item->stock_name == null || $item->quantity == null){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak boleh ada data Item yang kosong'
+                ], 400);
+            }
+            
+            $stock = StockItem::find($item->stock_id);
+            if($stock->quantity < $item->quantity){    
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok item '.$stock->stock_name.' di gudang hanya tersedia '.$stock->quantity,
+                    'data' => $stock,
+                ], 400);
+            }
+        }
+
+        foreach($bpb_detail as $item){
+            for ($i = 0; $i < $item->quantity; $i++) {
+                BuktiPengeluaranBarangDetailDetail::create([
+                    'bpb_id'=>$item->bpb_id,
+                    'bpb_detail_id'=>$item->id,
+                ]);
+            }
+        }
+    
+        $bpb->update([
+            'status'=>'Awaiting Warehouse Confirmation',
             'approved_by_status'=>'Waiting for Confirmation',
             'approved_by_date'=>null,
             'remarks'=>null,

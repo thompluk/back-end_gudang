@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('surat_jalan', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('no_surat_jalan')->nullable();
             $table->string('status')->nullable();
-            $table->string('status_pengiriman')->nullable();
             $table->unsignedBigInteger('company_id')->nullable();
             $table->string('company')->nullable();
             $table->unsignedBigInteger('menyerahkan_id')->nullable();
@@ -24,8 +24,6 @@ return new class extends Migration
             $table->string('mengetahui')->nullable();
             $table->string('mengetahui_status')->nullable();
             $table->date('mengetahui_date')->nullable();
-            $table->string('menerima')->nullable();
-            $table->date('menerima_date')->nullable();
             $table->text('remarks')->nullable();
             $table->timestamps();
         });

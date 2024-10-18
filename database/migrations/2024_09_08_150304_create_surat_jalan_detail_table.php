@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('surat_jalan_detail', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('surat_jalan_id')->nullable();
-            $table->unsignedBigInteger('stock_item_id')->nullable();
+            $table->unsignedBigInteger('stock_material_id')->nullable();
             $table->string('nama_barang')->nullable();
             $table->integer('quantity')->nullable();
-            $table->boolean('is_dikembalikan')->nullable();
             $table->text('keterangan')->nullable();
             $table->timestamps();
 

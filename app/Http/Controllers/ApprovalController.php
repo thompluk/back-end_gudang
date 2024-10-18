@@ -4,9 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\ApprovalRecord;
 use App\Models\BuktiPengeluaranBarang;
+use App\Models\BuktiPengeluaranBarangDetail;
+use App\Models\Item;
 use App\Models\PermintaanPembelianBarang;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderDetail;
+use App\Models\StockItem;
+use App\Models\StockMaterial;
+use App\Models\SuratJalan;
+use App\Models\SuratJalanDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 class ApprovalController extends Controller
 {
     public function indexApproval(){
-        $currentUserId = auth()->id();
+        $currentUserId = Auth::user()->id;
 
         $ppb = PermintaanPembelianBarang::where('mengetahui_id', $currentUserId)->where('mengetahui_status', 'Waiting for Confirmation')
                                             ->orWhere('menyetujui_id', $currentUserId)->where('mengetahui_status', 'Approved')
@@ -46,10 +52,20 @@ class ApprovalController extends Controller
                                                 $item->pemohon = $item->request_by; // Gantilah 'some_value' dengan nilai yang sesuai
                                                 return $item;
                                             });;   
+        $surat_jalan = SuratJalan::where('mengetahui_id', $currentUserId)->where('mengetahui_status', 'Waiting for Confirmation')
+                                            ->get()
+                                            ->map(function($item) {
+                                            $item->tipe = 'Surat Jalan';
+                                            $item->no = $item->no_surat_jalan;
+                                            $item->tanggal  = $item->menyerahkan_date;
+                                            $item->pemohon = $item->menyerahkan; // Gantilah 'some_value' dengan nilai yang sesuai
+                                            return $item;
+                                        });;                                               
                                             
         // Menggabungkan kedua koleksi
         $mergedData = $ppb->merge($po);
         $mergedData = $mergedData->merge($bpb);
+        $mergedData = $mergedData->merge($surat_jalan);
 
         return response()->json([
             'success' => true,
@@ -94,20 +110,103 @@ class ApprovalController extends Controller
         return $approvalRecord;
     }
 
+    private function deliver($id){
+        $bpb_detail = BuktiPengeluaranBarangDetail::where('bpb_id', $id)->get();
+
+        if ($bpb_detail == null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bukti Pengeluaran Barang Detail not found!',
+                'data' => $bpb_detail
+            ], 404);
+        }
+
+        foreach ($bpb_detail as $detail) {
+            
+            $item = Item::find($detail->item_id);
+    
+            if($item == null){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak terdapat Item pada gudang!',
+                    'data' => $item
+                ], 400);
+            }
+    
+            $stockitem = StockItem::where('id', $item->stock_id)->first();
+    
+            $detail->update([
+                'is_delivered' => 1
+            ]);
+    
+            $item->update([
+                'is_in_stock' => 0,
+                'leaving_date' => $detail->delivery_date
+            ]);
+    
+            $stockitem->update([
+                'quantity' => $stockitem->quantity - 1
+            ]);
+    
+        }
+        return $bpb_detail;
+        
+    }
+
+    private function deliverSuratJalan($id){
+        $surat_jalan_detail = SuratJalanDetail::where('surat_jalan_id', $id)->get();
+
+        if ($surat_jalan_detail == null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Surat Jalan Detail not found!',
+                'data' => $surat_jalan_detail
+            ], 404);
+        }
+
+        foreach ($surat_jalan_detail as $detail) {
+            
+            $stockmaterial = StockMaterial::find($detail->stock_material_id);
+    
+            if($stockmaterial == null){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak terdapat Item pada gudang!',
+                    'data' => $stockmaterial
+                ], 400);
+            }
+
+            $stockmaterial->update([
+                'quantity' => $stockmaterial->quantity - $detail->quantity
+            ]);
+    
+        }
+        return $surat_jalan_detail;
+        
+    }
+
     public function approve(Request $request){
 
         if($request->tipe == 'ppb'){
             $ppb = PermintaanPembelianBarang::find($request->id);
             $po = null;
             $bpb = null;
+            $surat_jalan = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
             $ppb = null;
             $bpb = null;
+            $surat_jalan = null;
         }else if($request->tipe == 'bpb'){
             $bpb = BuktiPengeluaranBarang::find($request->id);
             $po = null;
             $ppb = null;
+            $surat_jalan = null;
+        }else if($request->tipe == 'Surat Jalan'){
+            $surat_jalan = SuratJalan::find($request->id);
+            $ppb = null;
+            $po = null;
+            $bpb = null;
         }
 
         $user = Auth::user();
@@ -211,10 +310,34 @@ class ApprovalController extends Controller
 
             $record = $this->createRecord($bpb->no_bpb, $formattedDate, 'bpb', $bpb->request_by, $bpb->request_by_id, $user->name, $user->id, 'Approved', $request->remarks);
             
+            $this->deliver($request->id);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
                 'data' => $bpb,
+                'data2' => $record
+            ],200);
+        }
+
+        if ($surat_jalan !== null && $request->tipe == 'Surat Jalan') {
+            
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            $surat_jalan->update([
+                'mengetahui_status' => 'Approved',
+                'mengetahui_date' => $formattedDate,
+                'status' => 'Done',
+            ]);
+
+            $record = $this->createRecord($surat_jalan->no_surat_jalan, $formattedDate, 'Surat Jalan', $surat_jalan->menyerahkan, $surat_jalan->menyerahkan_id, $user->name, $user->id, 'Approved', $request->remarks);
+            
+            $this->deliverSuratJalan($request->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $surat_jalan,
                 'data2' => $record
             ],200);
         }
@@ -226,14 +349,22 @@ class ApprovalController extends Controller
             $ppb = PermintaanPembelianBarang::find($request->id);
             $po = null;
             $bpb = null;
+            $surat_jalan = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
             $ppb = null;
             $bpb = null;
+            $surat_jalan = null;
         }else if($request->tipe == 'bpb'){
             $bpb = BuktiPengeluaranBarang::find($request->id);
             $po = null;
             $ppb = null;
+            $surat_jalan = null;
+        }else if($request->tipe == 'Surat Jalan'){
+            $surat_jalan = SuratJalan::find($request->id);
+            $ppb = null;
+            $po = null;
+            $bpb = null;
         }
 
         $user = Auth::user();
@@ -330,6 +461,27 @@ class ApprovalController extends Controller
                 'data2' => $record
             ],200);
         }
+
+        if ($surat_jalan != null && $request->tipe == 'Surat Jalan') {
+
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            $surat_jalan->update([
+                'mengetahui_status' => 'Rejected',
+                'mengetahui_date' => $formattedDate,
+                'status' => 'Rejected',
+                'remarks' => $request->remarks . "\n". 'Rejected by : ' . Auth::user()->name
+            ]);
+            
+            $record = $this->createRecord($surat_jalan->no_surat_jalan, $formattedDate, 'Surat Jalan', $surat_jalan->menyerahkan, $surat_jalan->menyerahkan_id, $user->name, $user->id, 'Rejected', $request->remarks);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $surat_jalan,
+                'data2' => $record
+            ],200);
+        }
     }
     
     public function return(Request $request){
@@ -338,14 +490,22 @@ class ApprovalController extends Controller
             $ppb = PermintaanPembelianBarang::find($request->id);
             $po = null;
             $bpb = null;
+            $surat_jalan = null;
         }else if($request->tipe == 'po'){
             $po = PurchaseOrder::find($request->id);
             $ppb = null;
             $bpb = null;
+            $surat_jalan = null;
         }else if($request->tipe == 'bpb'){
             $bpb = BuktiPengeluaranBarang::find($request->id);
             $po = null;
             $ppb = null;
+            $surat_jalan = null;
+        }else if($request->tipe == 'Surat Jalan'){
+            $surat_jalan = SuratJalan::find($request->id);
+            $ppb = null;
+            $po = null;
+            $bpb = null;
         }
 
         $user = Auth::user();
@@ -441,6 +601,27 @@ class ApprovalController extends Controller
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
                 'data' => $bpb,
+                'data2' => $record
+            ],200);
+        }
+
+        if ($surat_jalan != null && $request->tipe == 'Surat Jalan') {
+
+            $formattedDate = Carbon::now()->format('Y-m-d');
+
+            $surat_jalan->update([
+                'mengetahui_status' => 'Returned',
+                'mengetahui_date' => $formattedDate,
+                'status' => 'Returned',
+                'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
+            ]);
+            
+            $record = $this->createRecord($surat_jalan->no_surat_jalan, $formattedDate, 'Surat Jalan', $surat_jalan->menyerahkan, $surat_jalan->menyerahkan_id, $user->name, $user->id, 'Returned', $request->remarks);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Approval successfully retrieved!',
+                'data' => $surat_jalan,
                 'data2' => $record
             ],200);
         }
