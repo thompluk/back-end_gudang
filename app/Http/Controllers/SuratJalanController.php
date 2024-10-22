@@ -24,6 +24,25 @@ class SuratJalanController extends Controller
         ], 200);
     }
 
+    public function suratjalanselect()
+    {
+        // $suratJalan = SuratJalan::where('')->orderBy('created_at')->get();
+
+        $suratJalan = SuratJalan::
+            where('status', 'Done')
+            ->whereNotIn('id', function($query) {
+                $query->select('surat_jalan_id')->where('surat_jalan_id', '!=', null)->where('status', 'Done')
+                    ->from('pengembalian_barang');
+            })
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Surat Jalan successfully retrieved!',
+            'data' => $suratJalan
+        ], 200);
+    }
+
     public function indexsuratjalanumum()
     {
         $surat_jalan = SuratJalan::orderBy('menyerahkan_date')->where('status','!=', 'Draft')->get();
@@ -262,14 +281,15 @@ class SuratJalanController extends Controller
 
         foreach($surat_jalan_detail as $item){
             
-            if($item->stock_item_id == null || $item->quantity == null || $item->quantity == null){
+            if($item->stock_material_id == null || $item->quantity == null){
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak boleh ada data Item yang kosong'
                 ], 400);
             }
+            
 
-            $stock = StockMaterial::find($item->stock_item_id);
+            $stock = StockMaterial::find($item->stock_material_id);
             if($stock->quantity < $item->quantity){    
                 return response()->json([
                     'success' => false,

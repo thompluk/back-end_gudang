@@ -7,6 +7,8 @@ use App\Http\Controllers\BuktiPengeluaranBarangDetailController;
 use App\Http\Controllers\BuktiPengeluaranBarangDetailDetailController;
 use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\PengembalianBarangController;
+use App\Http\Controllers\PengembalianBarangDetailController;
 use App\Http\Controllers\PermintaanPembelianBarangController;
 use App\Http\Controllers\PermintaanPembelianBarangDetailController;
 use App\Http\Controllers\PrinsipalController;
@@ -150,6 +152,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/suratjalan/post/{id}', [SuratJalanController::class, 'post'])->name('suratjalan.post');
     Route::put('/suratjalan/update/{id}', [SuratJalanController::class, 'update'])->name('suratjalan.update');
     Route::delete('/suratjalan/{id}', [SuratJalanController::class, 'destroy'])->name('suratjalan.destroy');
+    Route::post('/suratjalanselect', [SuratJalanController::class, 'suratjalanSelect'])->name('suratjalan.suratjalanSelect');
 
      // * Surat Jalan Detail
      Route::get('/allsuratjalandetail', [SuratJalanDetailController::class, 'index'])->name('suratjalandetail.index');
@@ -157,6 +160,27 @@ Route::middleware('auth:sanctum')->group(function () {
      Route::post('/suratjalandetail', [SuratJalanDetailController::class, 'create'])->name('suratjalandetail.create');
      Route::delete('/suratjalandetail/{id}', [SuratJalanDetailController::class, 'destroy'])->name('suratjalandetail.destroy');
      Route::post('/suratjalansaveAll/{surat_jalan_id}', [SuratJalanDetailController::class, 'saveAll'])->name('suratjalandetail.saveAll');
+     Route::get('showbyidforpengembalian/{id}', [SuratJalanDetailController::class, 'showbyidforpengembalian'])->name('suratjalandetail.showbyidforpengembalian');
+
+      // * Surat Jalan
+    Route::get('/allpengembalianbarang', [PengembalianBarangController::class, 'index'])->name('pengembalianbarang.index');
+    // Route::get('/allpengembalianbarangumum', [PengembalianBarangController::class, 'indexpengembalianbarangumum'])->name('pengembalianbarang.indexpengembalianbarangumum');
+    Route::get('/allpengembalianbarang/draft', [PengembalianBarangController::class, 'indexDraft'])->name('pengembalianbarang.indexDraft');
+    Route::get('/allpengembalianbarang/onApproval', [PengembalianBarangController::class, 'indexOnApproval'])->name('pengembalianbarang.indexOnApproval');
+    Route::get('/allpengembalianbarang/done', [PengembalianBarangController::class, 'indexDone'])->name('pengembalianbarang.indexDone');
+    Route::get('/allpengembalianbarang/rejected', [PengembalianBarangController::class, 'indexRejected'])->name('pengembalianbarang.indexRejected');
+    Route::get('/pengembalianbarang/{id}', [PengembalianBarangController::class, 'show'])->name('pengembalianbarang.show');
+    Route::post('/pengembalianbarang', [PengembalianBarangController::class, 'create'])->name('pengembalianbarang.create');
+    Route::post('/pengembalianbarang/post/{id}', [PengembalianBarangController::class, 'post'])->name('pengembalianbarang.post');
+    Route::put('/pengembalianbarang/update/{id}', [PengembalianBarangController::class, 'update'])->name('pengembalianbarang.update');
+    Route::delete('/pengembalianbarang/{id}', [PengembalianBarangController::class, 'destroy'])->name('pengembalianbarang.destroy');
+
+     // * Surat Jalan Detail
+     Route::get('/allpengembalianbarangdetail', [PengembalianBarangDetailController::class, 'index'])->name('pengembalianbarangdetail.index');
+     Route::get('/pengembalianbarangdetaillist/{id}', [PengembalianBarangDetailController::class, 'showbyid'])->name('pengembalianbarangdetail.showbyid');
+    //  Route::post('/pengembalianbarangdetail', [PengembalianBarangDetailController::class, 'create'])->name('pengembalianbarangdetail.create');
+     Route::delete('/pengembalianbarangdetail/{id}', [PengembalianBarangDetailController::class, 'destroy'])->name('pengembalianbarangdetail.destroy');
+     Route::post('/pengembalianbarangsaveAll/{surat_jalan_id}', [PengembalianBarangDetailController::class, 'saveAll'])->name('pengembalianbarangdetail.saveAll');
 
       // * BuktiPengeluaranBarang
     Route::get('/allbpb', [BuktiPengeluaranBarangController::class, 'index'])->name('bpb.index');
