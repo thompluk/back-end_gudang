@@ -107,4 +107,47 @@ class AuthController extends Controller
             'message' => 'User not authenticated'
         ], 403);
     }
+
+    public function ubahPassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'password_lama' => 'required',
+            'password_baru' => 'required',
+            'password_konfirmasi' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ], 400);
+        }
+
+        if ($request->password_baru != $request->password_konfirmasi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password konfirmasi tidak sesuai!'
+            ], 400);
+        }
+
+        if (!Hash::check($request->password_lama, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password lama tidak sesuai!'
+            ], 400);
+        }
+
+        $user_update = User::find($user->id);
+
+        $user_update->update([
+            'password' => Hash::make($request->password_baru)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password successfully updated!'
+        ], 200);
+    }
 }

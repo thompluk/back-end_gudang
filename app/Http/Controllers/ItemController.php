@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BuktiPengeluaranBarangDetailDetail;
 use App\Models\Item;
 use App\Models\PurchaseOrderDetail;
 use App\Models\StockItem;
@@ -26,14 +27,18 @@ class ItemController extends Controller
     public function itemSelect(Request $request, $filter)
     {
         $ids = $request->input('item_ids');
+        $bpb_id = $request->input('bpb_id');
 
         if (!empty($ids)) {
             
+            $bpb_detail_detail = BuktiPengeluaranBarangDetailDetail::select('item_id')->where('item_id', '!=', null)->where('bpb_id','!=', $bpb_id)->get();
+
             $item = Item::
-            whereNotIn('id', function($query) {
-                $query->select('item_id')->where('item_id', '!=', null)
-                    ->from('bukti_pengeluaran_barang_detail_detail');
-            })
+            // whereNotIn('id', function($query) {
+            //     $query->select('item_id')->where('item_id', '!=', null)
+            //         ->from('bukti_pengeluaran_barang_detail_detail');
+            // })
+            whereNotIn('id', $bpb_detail_detail)
             ->where('stock_id', $filter)
             ->where('is_in_stock', true)
             ->whereNotIn('id', $ids)

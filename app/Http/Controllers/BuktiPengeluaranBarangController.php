@@ -241,70 +241,70 @@ class BuktiPengeluaranBarangController extends Controller
     });
     }
 
-    public function post($id)
-    {
+    // public function post($id)
+    // {
 
-        $bpb = BuktiPengeluaranBarang::find($id);
-        $bpb_detail = BuktiPengeluaranBarangDetail::where('bpb_id', $id)->get();
+    //     $bpb = BuktiPengeluaranBarang::find($id);
+    //     $bpb_detail = BuktiPengeluaranBarangDetail::where('bpb_id', $id)->get();
 
-        if ($bpb == null) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bukti Pengeluaran Barang not found!',
-                'data' => $bpb
-            ], 404);
-        }
+    //     if ($bpb == null) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Bukti Pengeluaran Barang not found!',
+    //             'data' => $bpb
+    //         ], 404);
+    //     }
 
-        if (count($bpb_detail) == 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Item Bukti Pengeluaran Barang minimal 1 item!',
-                'data' => $bpb_detail
-            ], 404);
-        }
+    //     if (count($bpb_detail) == 0) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Item Bukti Pengeluaran Barang minimal 1 item!',
+    //             'data' => $bpb_detail
+    //         ], 404);
+    //     }
 
-        if( $bpb->salesman == null || $bpb->no_po == null || $bpb->delivery_by == null || $bpb->delivery_date == null || $bpb->is_partial_delivery == null  || $bpb->customer == null ||
-            $bpb->customer_address == null || $bpb->customer_pic_name == null || $bpb->customer_pic_phone == null || $bpb->approved_by == null){
-            return response()->json([
-                'success' => false,
-                'message' => 'Tidak boleh ada data Bukti Pengeluaran Barang yang kosong'
-            ], 400);
+    //     if( $bpb->salesman == null || $bpb->no_po == null || $bpb->delivery_by == null || $bpb->delivery_date == null || $bpb->is_partial_delivery == null  || $bpb->customer == null ||
+    //         $bpb->customer_address == null || $bpb->customer_pic_name == null || $bpb->customer_pic_phone == null || $bpb->approved_by == null){
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Tidak boleh ada data Bukti Pengeluaran Barang yang kosong'
+    //         ], 400);
         
-        }
+    //     }
 
-        foreach($bpb_detail as $item){
-            if($item->bpb_id == null || $item->stock_name == null || $item->quantity == null){
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tidak boleh ada data Item yang kosong'
-                ], 400);
-            }
-        }
+    //     foreach($bpb_detail as $item){
+    //         if($item->bpb_id == null || $item->stock_name == null || $item->quantity == null){
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Tidak boleh ada data Item yang kosong'
+    //             ], 400);
+    //         }
+    //     }
 
-        foreach($bpb_detail as $item){
-            for ($i = 0; $i < $item->quantity; $i++) {
-                BuktiPengeluaranBarangDetailDetail::create([
-                    'ppb_id'=>$item->ppb_id,
-                    'ppb_detail_id'=>$item->id,
-                ]);
-            }
-        }
+    //     foreach($bpb_detail as $item){
+    //         for ($i = 0; $i < $item->quantity; $i++) {
+    //             BuktiPengeluaranBarangDetailDetail::create([
+    //                 'ppb_id'=>$item->ppb_id,
+    //                 'ppb_detail_id'=>$item->id,
+    //             ]);
+    //         }
+    //     }
     
-        $bpb->update([
-            'status'=>'On Approval',
-            'approved_by_status'=>'Waiting for Confirmation',
-            'approved_by_date'=>null,
-            'remarks'=>null,
-        ]);
+    //     $bpb->update([
+    //         'status'=>'On Approval',
+    //         'approved_by_status'=>'Waiting for Confirmation',
+    //         'approved_by_date'=>null,
+    //         'remarks'=>null,
+    //     ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Bukti Pengeluaran Barang updated successfully!',
-            'data' => $bpb
-        ], 200);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Bukti Pengeluaran Barang updated successfully!',
+    //         'data' => $bpb
+    //     ], 200);
+    // }
 
-    public function postToOutstanding($id)
+    public function post($id)
     {
 
         $bpb = BuktiPengeluaranBarang::find($id);
@@ -364,7 +364,7 @@ class BuktiPengeluaranBarangController extends Controller
         }
     
         $bpb->update([
-            'status'=>'Awaiting Warehouse Confirmation',
+            'status'=>'On Approval',
             'approved_by_status'=>'Waiting for Confirmation',
             'approved_by_date'=>null,
             'remarks'=>null,

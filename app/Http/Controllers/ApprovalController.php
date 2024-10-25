@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ApprovalRecord;
 use App\Models\BuktiPengeluaranBarang;
 use App\Models\BuktiPengeluaranBarangDetail;
+use App\Models\BuktiPengeluaranBarangDetailDetail;
 use App\Models\Item;
 use App\Models\PermintaanPembelianBarang;
 use App\Models\PurchaseOrder;
@@ -16,6 +17,7 @@ use App\Models\SuratJalanDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ApprovalController extends Controller
 {
@@ -111,45 +113,57 @@ class ApprovalController extends Controller
     }
 
     private function deliver($id){
-        $bpb_detail = BuktiPengeluaranBarangDetail::where('bpb_id', $id)->get();
+        DB::beginTransaction();
+        try {
 
-        if ($bpb_detail == null) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bukti Pengeluaran Barang Detail not found!',
-                'data' => $bpb_detail
-            ], 404);
-        }
+            $bpb_detail_detail = BuktiPengeluaranBarangDetailDetail::where('bpb_id', $id)->get();
 
-        foreach ($bpb_detail as $detail) {
-            
-            $item = Item::find($detail->item_id);
-    
-            if($item == null){
+            if ($bpb_detail_detail == null) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak terdapat Item pada gudang!',
-                    'data' => $item
-                ], 400);
+                    'message' => 'Bukti Pengeluaran Barang Detail not found!',
+                    'data' => $bpb_detail_detail
+                ], 404);
             }
+
+            foreach ($bpb_detail_detail as $detail) {
+                
+                $item = Item::find($detail->item_id);
+        
+                if($item == null){
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tidak terdapat Item pada gudang!',
+                        'data' => $item
+                    ], 400);
+                }
+        
+                $stockitem = StockItem::where('id', $item->stock_id)->first();
+
+                $formattedDate = Carbon::now()->format('Y-m-d');
+        
+                $item->update([
+                    'is_in_stock' => 0,
+                    'leaving_date' => $formattedDate
+                ]);
+        
+                $stockitem->update([
+                    'quantity' => $stockitem->quantity - 1
+                ]);
+        
+            }
+
+            DB::commit();
+
+            return $bpb_detail_detail;
+
+        } catch (\Exception $e) {
+
+            // Jika terjadi kesalahan, rollback semua perubahan
+            DB::rollBack();
     
-            $stockitem = StockItem::where('id', $item->stock_id)->first();
-    
-            $detail->update([
-                'is_delivered' => 1
-            ]);
-    
-            $item->update([
-                'is_in_stock' => 0,
-                'leaving_date' => $detail->delivery_date
-            ]);
-    
-            $stockitem->update([
-                'quantity' => $stockitem->quantity - 1
-            ]);
-    
+            return response()->json(['error' => $e->getMessage()], 400);
         }
-        return $bpb_detail;
         
     }
 
@@ -298,6 +312,16 @@ class ApprovalController extends Controller
         }
 
         if ($bpb !== null && $request->tipe == 'bpb') {
+
+            $bpb_detail_detail = BuktiPengeluaranBarangDetailDetail::where('bpb_id', $request->id)->where('item_id', null)->get();
+
+            if($bpb_detail_detail->count() > 0){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lengkapi data Item sebelum melanjutkan approval!',
+                    'data' => $bpb_detail_detail
+                ],400);
+            };
             
             $formattedDate = Carbon::now()->format('Y-m-d');
 
@@ -316,7 +340,8 @@ class ApprovalController extends Controller
                 'success' => true,
                 'message' => 'Data Approval successfully retrieved!',
                 'data' => $bpb,
-                'data2' => $record
+                'data2' => $bpb_detail_detail,
+                'data3' => $record
             ],200);
         }
 
@@ -594,6 +619,11 @@ class ApprovalController extends Controller
                 'status' => 'Returned',
                 'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
             ]);
+
+            $bpb_detail_detail = BuktiPengeluaranBarangDetailDetail::where('bpb_id', $bpb->id)->get();
+            foreach ($bpb_detail_detail as $bpb_detail_detail) {
+                $bpb_detail_detail->delete();
+            }
             
             $record = $this->createRecord($bpb->no_bpb, $formattedDate, 'bpb', $bpb->request_by, $bpb->request_by_id, $user->name, $user->id, 'Returned', $request->remarks);
 
