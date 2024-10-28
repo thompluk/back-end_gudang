@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('approval_record', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('no')->nullable();
+            $table->string('no_document')->nullable();
             $table->date('date')->nullable();
             $table->string('type')->nullable();
             $table->string('requestor')->nullable();

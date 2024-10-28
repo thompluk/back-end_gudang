@@ -13,7 +13,7 @@ class ApprovalRecord extends Model
 
     protected $fillable = [
         'id',
-        'no',
+        'no_document',
         'date',
         'type',
         'requestor',

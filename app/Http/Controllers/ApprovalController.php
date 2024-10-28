@@ -30,7 +30,7 @@ class ApprovalController extends Controller
                                             ->get()
                                             ->map(function($item) {
                                                 $item->tipe = 'ppb';
-                                                $item->no = $item->no_ppb; // Gantilah 'some_value' dengan nilai yang sesuai
+                                                $item->no_document = $item->no_ppb; // Gantilah 'some_value' dengan nilai yang sesuai
                                                 return $item;
                                             });;
 
@@ -40,7 +40,7 @@ class ApprovalController extends Controller
                                             ->get()
                                             ->map(function($item) {
                                                 $item->tipe = 'po';
-                                                $item->no = $item->no_po;
+                                                $item->no_document = $item->no_po;
                                                 $item->pemohon = $item->prepared_by; // Gantilah 'some_value' dengan nilai yang sesuai
                                                 return $item;
                                             });;                                    
@@ -49,7 +49,7 @@ class ApprovalController extends Controller
                                                 ->get()
                                                 ->map(function($item) {
                                                 $item->tipe = 'bpb';
-                                                $item->no = $item->no_bpb;
+                                                $item->no_document = $item->no_bpb;
                                                 $item->tanggal  = $item->date;
                                                 $item->pemohon = $item->request_by; // Gantilah 'some_value' dengan nilai yang sesuai
                                                 return $item;
@@ -58,7 +58,7 @@ class ApprovalController extends Controller
                                             ->get()
                                             ->map(function($item) {
                                             $item->tipe = 'Surat Jalan';
-                                            $item->no = $item->no_surat_jalan;
+                                            $item->no_document = $item->no_surat_jalan;
                                             $item->tanggal  = $item->menyerahkan_date;
                                             $item->pemohon = $item->menyerahkan; // Gantilah 'some_value' dengan nilai yang sesuai
                                             return $item;
@@ -87,10 +87,10 @@ class ApprovalController extends Controller
         ], 200);
     } 
 
-    private function createRecord($no, $date, $type, $requestor, $requestor_id, $approver, $approver_id, $action, $remarks)
+    private function createRecord($no_document, $date, $type, $requestor, $requestor_id, $approver, $approver_id, $action, $remarks)
     {
         $approvalRecord = ApprovalRecord::create([
-            'no' => $no,
+            'no_document' => $no_document,
             'date' => $date,
             'type' => $type,
             'requestor' => $requestor,
@@ -231,16 +231,20 @@ class ApprovalController extends Controller
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Approved',
+                    'mengetahui_date' => $formattedDate,
                     'menyetujui_status' => 'Approved',
+                    'menyetujui_date' => $formattedDate,
                     'status' => 'Done',
                 ]);
             }elseif($ppb->mengetahui_status == 'Waiting for Confirmation'){
                 $ppb->update([
                     'mengetahui_status' => 'Approved',
+                    'mengetahui_date' => $formattedDate,
                 ]);
             }else{
                 $ppb->update([
                     'menyetujui_status' => 'Approved',
+                    'menyetujui_date' => $formattedDate,
                     'status' => 'Done',
                 ]);
             }
@@ -276,6 +280,7 @@ class ApprovalController extends Controller
                         'purchasing' => $po->prepared_by,
                         'purchasing_id' => $po->prepared_by_id,
                         'purchasing_status' => 'Approved',
+                        'purchasing_date' => $formattedDate,
                     ]);
                 }
 
@@ -298,6 +303,7 @@ class ApprovalController extends Controller
                         'purchasing' => $po->prepared_by,
                         'purchasing_id' => $po->prepared_by_id,
                         'purchasing_status' => 'Approved',
+                        'purchasing_date' => $formattedDate,
                     ]);
                 }
             }
@@ -399,13 +405,16 @@ class ApprovalController extends Controller
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Rejected',
+                    'mengetahui_date' => $formattedDate,
                     'menyetujui_status' => 'Rejected',
+                    'menyetujui_date' => $formattedDate,
                     'status' => 'Rejected',
                     'remarks' => $request->remarks ."\n". 'Rejected by : ' . Auth::user()->name
                 ]);
             }elseif($ppb->mengetahui_status == 'Waiting for Confirmation'){
                 $ppb->update([
                     'mengetahui_status' => 'Rejected',
+                    'mengetahui_date' => $formattedDate,
                     'menyetujui_status' => '-',
                     'status' => 'Rejected',
                     'remarks' => $request->remarks ."\n". 'Rejected by : ' . Auth::user()->name
@@ -413,6 +422,7 @@ class ApprovalController extends Controller
             }else{
                 $ppb->update([
                     'menyetujui_status' => 'Rejected',
+                    'menyetujui_date' => $formattedDate,
                     'status' => 'Rejected',
                     'remarks' => $request->remarks . "\n". 'Rejected by : ' . Auth::user()->name
                 ]);
@@ -540,13 +550,16 @@ class ApprovalController extends Controller
             if($ppb->mengetahui_id == $ppb->menyetujui_id){
                 $ppb->update([
                     'mengetahui_status' => 'Returned',
+                    'mengetahui_date' => $formattedDate,
                     'menyetujui_status' => 'Returned',
+                    'menyetujui_date' => $formattedDate,
                     'status' => 'Returned',
                     'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
                 ]);
             }elseif($ppb->mengetahui_status == 'Waiting for Confirmation'){
                 $ppb->update([
                     'mengetahui_status' => 'Returned',
+                    'mengetahui_date' => $formattedDate,
                     'menyetujui_status' => '-',
                     'status' => 'Returned',
                     'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
@@ -554,6 +567,7 @@ class ApprovalController extends Controller
             }else{
                 $ppb->update([
                     'menyetujui_status' => 'Returned',
+                    'menyetujui_date' => $formattedDate,
                     'status' => 'Returned',
                     'remarks' => $request->remarks ."\n". 'Returned by : ' . Auth::user()->name
                 ]);

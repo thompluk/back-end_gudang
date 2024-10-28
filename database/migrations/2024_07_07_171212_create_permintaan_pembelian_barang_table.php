@@ -21,12 +21,15 @@ return new class extends Migration
                 $table->string('mengetahui')->nullable();
                 $table->string('mengetahui_id')->nullable();
                 $table->string('mengetahui_status')->nullable();
+                $table->date('mengetahui_date')->nullable();
                 $table->string('menyetujui')->nullable();
                 $table->string('menyetujui_id')->nullable();
                 $table->string('menyetujui_status')->nullable();
+                $table->string('menyetujui_date')->nullable();
                 $table->string('purchasing')->nullable();
                 $table->string('purchasing_id')->nullable();
                 $table->string('purchasing_status')->nullable();
+                $table->string('purchasing_date')->nullable();
                 $table->text('remarks')->nullable();
                 $table->timestamps();
             });

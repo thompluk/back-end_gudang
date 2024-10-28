@@ -132,4 +132,18 @@ class StockMaterialController extends Controller
             'data' => $stockMaterial,
         ], 200);
     }
+
+    public function indexDashboard()
+    {
+        // Mengambil data stock_name dan quantity saja, disortir berdasarkan updated_at paling baru
+        $stockMaterial = StockMaterial::orderBy('updated_at', 'desc')
+            ->take(10)
+            ->get(['stock_name', 'quantity']); // Pilih kolom yang ingin diambil
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Stock Item successfully retrieved!',
+            'data' => $stockMaterial
+        ], 200);
+    }
 }

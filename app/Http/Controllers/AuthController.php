@@ -150,4 +150,18 @@ class AuthController extends Controller
             'message' => 'Password successfully updated!'
         ], 200);
     }
+
+    public function resetPassword()
+    {
+        $user = Auth::user();
+        $user_update = User::find($user->id);
+        $user_update->update([
+            'password' => Hash::make('12345')
+        ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Password successfully updated!',
+            'data' => $user_update,
+        ], 200);
+    }
 }

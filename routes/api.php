@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/profile', [UserController::class, 'getUserLoggedIn'])->name('user.getLogIn');
     Route::post('/logout', [AuthController::class, 'logout'])->name('user.logout');
     Route::post('/ubahPassword', [AuthController::class, 'ubahPassword'])->name('user.ubahPassword');
+    Route::post('/resetPassword/{id}', [AuthController::class, 'resetPassword'])->name('user.resetPassword');
 
     // * User
     Route::get('/alluser', [UserController::class, 'index'])->name('user.index');
@@ -130,6 +131,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/stockmaterial/update/{id}', [StockItemController::class, 'update'])->name('stockmaterial.update');
     Route::delete('/stockmaterial/{id}', [StockMaterialController::class, 'destroy'])->name('stockmaterial.destroy');
     Route::post('/stockmaterialSelect', [StockMaterialController::class, 'stockmaterialSelect'])->name('stockmaterial.stockitemSelect');
+    Route::get('/stockmaterialdashboard', [StockMaterialController::class, 'indexDashboard'])->name('stockmaterial.indexDashboard');
+
 
     // * Item
     Route::get('/allitem', [ItemController::class, 'index'])->name('item.index');
