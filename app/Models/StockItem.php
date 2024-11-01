@@ -13,7 +13,7 @@ class StockItem extends Model
 
     protected $fillable = [
         'id',
-        'stock_name',
+        'stock_name',   
         'tipe',
         'prinsipal',
         'prinsipal_id',

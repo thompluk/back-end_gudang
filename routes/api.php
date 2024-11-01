@@ -46,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/update/{id}', [UserController::class, 'update'])->name('user.update');
     Route::delete('/user/{id}', [UserController::class, 'destroy'])->name('user.destroy');
     Route::post('/user/upload-excel', [UserController::class, 'upload'])->name('user.upload');
-    Route::get('/user-download-template', [UserController::class, 'downloadTemplate'])->name('user.downloadTemplate');
+    // Route::get('/user-download-template', [UserController::class, 'downloadTemplate'])->name('user.downloadTemplate');
 
     // * Prinsipal
     Route::get('/allprinsipal', [PrinsipalController::class, 'index'])->name('prinsipal.index');
@@ -122,6 +122,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/stockitem/{id}', [StockItemController::class, 'destroy'])->name('stockitem.destroy');
     Route::post('/stockitemselect', [StockItemController::class, 'stockitemSelect'])->name('stockitem.stockitemSelect');
     Route::get('/stockitemdashboard', [StockItemController::class, 'indexDashboard'])->name('stockitem.indexDashboard');
+    Route::post('/stockitem/upload-excel', [StockItemController::class, 'upload'])->name('stockitem.upload');
+
 
     // * Stock Material
     Route::get('/allstockmaterial', [StockMaterialController::class, 'index'])->name('stockmaterial.index');
@@ -132,7 +134,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/stockmaterial/{id}', [StockMaterialController::class, 'destroy'])->name('stockmaterial.destroy');
     Route::post('/stockmaterialSelect', [StockMaterialController::class, 'stockmaterialSelect'])->name('stockmaterial.stockitemSelect');
     Route::get('/stockmaterialdashboard', [StockMaterialController::class, 'indexDashboard'])->name('stockmaterial.indexDashboard');
-
+    Route::post('/stockmaterial/upload-excel', [StockMaterialController::class, 'upload'])->name('stockmaterial.upload');
 
     // * Item
     Route::get('/allitem', [ItemController::class, 'index'])->name('item.index');
@@ -169,6 +171,7 @@ Route::middleware('auth:sanctum')->group(function () {
       // * Surat Jalan
     Route::get('/allpengembalianbarang', [PengembalianBarangController::class, 'index'])->name('pengembalianbarang.index');
     // Route::get('/allpengembalianbarangumum', [PengembalianBarangController::class, 'indexpengembalianbarangumum'])->name('pengembalianbarang.indexpengembalianbarangumum');
+    Route::get('/allpengembalianbarang/umum', [PengembalianBarangController::class, 'indexUmum'])->name('pengembalianbarang.indexUmum');
     Route::get('/allpengembalianbarang/draft', [PengembalianBarangController::class, 'indexDraft'])->name('pengembalianbarang.indexDraft');
     Route::get('/allpengembalianbarang/onApproval', [PengembalianBarangController::class, 'indexOnApproval'])->name('pengembalianbarang.indexOnApproval');
     Route::get('/allpengembalianbarang/done', [PengembalianBarangController::class, 'indexDone'])->name('pengembalianbarang.indexDone');

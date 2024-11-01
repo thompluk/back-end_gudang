@@ -8,6 +8,8 @@ use App\Models\StockMaterial;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class StockMaterialController extends Controller
 {
@@ -145,5 +147,80 @@ class StockMaterialController extends Controller
             'message' => 'All Stock Item successfully retrieved!',
             'data' => $stockMaterial
         ], 200);
+    }
+
+    public function upload(Request $request)
+    {
+        // Validasi file
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv', // max file size 2MB
+        ]);
+
+        // Menggunakan PHPSpreadsheet untuk membaca file Excel
+        $filePath = $request->file('file')->getRealPath();
+        $spreadsheet = IOFactory::load($filePath);
+
+        // Ambil data dari sheet pertama
+        $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+
+        // Ambil header dari baris pertama
+        $headers = $sheetData[1]; // Mengambil header dari baris pertama
+
+        if($headers['A'] !== 'Stock Name*' || $headers['B'] !== 'Quantity*' || $headers['C'] !== 'Item Unit*' || $headers['D'] !== 'No. PPB' ||$headers['E'] !== 'No. PO'
+            || $headers['F'] !== 'Description' || $headers['G'] !== 'Unit Price' || $headers['H'] !== 'Remarks' || $headers['I'] !== 'Arrival Date' || $headers['J'] !== 'Receiver'){
+            return response()->json([
+                'success' => false,
+                'message' => 'File format is not valid! Please use the template form.',
+                'data'=> $headers,
+            ], 404);
+        }
+        // Loop melalui data dan simpan ke database
+        foreach ($sheetData as $rowIndex => $row) {
+            if ($rowIndex == 1) continue; // Lewati header
+        
+            $stock_name = $row['A'] ?? null;
+            $quantity = $row['B'] ?? null;
+            $item_unit = $row['C'] ?? null;
+            $no_ppb = $row['D'] ?? null;
+            $no_po = $row['E'] ?? null;
+            $description = $row['F'] ?? null;
+            $unit_price = $row['G'] ?? null;
+            $remarks = $row['H'] ?? null;
+            $arrival_date = $row['I'] ?? null;
+            $receiver = $row['J'] ?? null;
+        
+            if (empty($stock_name) || empty($quantity) || empty($item_unit)) {
+                // return response()->json(['message' => 'File uploaded successfully!','data' => $name]);
+                Log::warning("Missing stock name or quantity or item unit at row $rowIndex");
+                continue; // Lewati baris ini jika nama atau email kosong
+            }
+
+            $arr_date = null;
+
+            if (!empty($arrival_date)) {
+                try {
+                    $arr_date = Carbon::createFromFormat('d/m/Y', $arrival_date);
+                    // Format sesuai, lakukan sesuatu dengan $arrival_date_carbon
+                } catch (\Exception $e) {
+                    $arr_date = null;
+                }
+            }
+
+            StockMaterial::create([
+                'stock_name' => $stock_name,
+                'quantity' => $quantity,
+                'item_unit' => $item_unit,
+                'no_ppb' => $no_ppb,
+                'no_po' => $no_po,
+                'description' => $description,
+                'unit_price' => $unit_price,
+                'remarks' => $remarks,
+                'arrival_date' => $arr_date,
+                'receiver' => $receiver,
+            ]);
+
+        }
+
+        return response()->json(['message' => 'File uploaded successfully!']);
     }
 }

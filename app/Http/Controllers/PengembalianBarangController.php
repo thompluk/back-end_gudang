@@ -24,6 +24,17 @@ class PengembalianBarangController extends Controller
         ], 200);
     }
 
+    public function indexUmum()
+    {
+        $pengembalianBarang = PengembalianBarang::where('status', 'Done')->orderBy('created_at')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'All Pengembalian Barang successfully retrieved!',
+            'data' => $pengembalianBarang
+        ], 200);
+    }
+
     public function indexDraft()
     {
         $user_id = Auth::user()->id;

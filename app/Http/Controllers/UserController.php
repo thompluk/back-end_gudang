@@ -264,40 +264,4 @@ class UserController extends Controller
         return response()->json(['message' => 'File uploaded successfully!']);
     }
 
-    public function downloadTemplate()
-    {
-        // Buat objek spreadsheet baru
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Set header untuk kolom
-        $sheet->setCellValue('A1', 'Name'); // Kolom nama
-        $sheet->setCellValue('B1', 'Email'); // Kolom email
-        $sheet->setCellValue('C1', 'Phone Number'); // Kolom nomor telepon
-        $sheet->setCellValue('D1', 'Password'); // Kolom password
-        $sheet->setCellValue('E1', 'Role'); // Kolom role
-
-        $sheet->setCellValue('A2', 'TestName'); // Kolom nama
-        $sheet->setCellValue('B2', 'TestEmail'); // Kolom email
-        $sheet->setCellValue('C2', '123456789'); // Kolom nomor telepon
-        $sheet->setCellValue('D2', 'TestPassword'); // Kolom password
-        $sheet->setCellValue('E2', 'ADMIN'); // Kolom role
-
-        // Set format header untuk pengunduhan file
-        $filename = 'templateUser.xlsx';
-        
-        // Buat penulis untuk file Excel
-        $writer = new Xlsx($spreadsheet);
-
-        // Bersihkan output buffer
-        ob_end_clean();
-        
-        // Buat response untuk mengunduh file
-        return response()->stream(function() use ($writer) {
-            $writer->save('php://output');
-        }, Response::HTTP_OK, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
-    }
 }

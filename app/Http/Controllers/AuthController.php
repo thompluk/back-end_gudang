@@ -23,17 +23,12 @@ class AuthController extends Controller
                     'email' => 'required',
                     'password' => 'required|string'
                 ],
-                [
-                    'email.required' => 'Email wajib diisi!',
-                    // 'email.email' => 'Email tidak valid!',
-                    'password.required' => 'Password wajib diisi!'
-                ]
             );
 
             if ($validationData->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $validationData->errors()
+                    'message' => "Email dan Password harus diisi!"
                 ], 400);
             }
 
@@ -67,17 +62,13 @@ class AuthController extends Controller
                 } else {
                     return response()->json([
                         'success' => false,
-                        'message' => [
-                            'password' => ['Password salah!']
-                        ]
+                        'message' => "Password tidak sesuai!"
                     ], 400);
                 }
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => [
-                        'email' => ['Pengguna tidak ditemukan!']
-                    ]
+                    'message' => "Email tidak terdaftar!"
                 ], 404);
             }
         } catch (\Exception $e) {
