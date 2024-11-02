@@ -39,7 +39,7 @@ class BuktiPengeluaranBarangController extends Controller
     {
 
         $userRole = Auth::user()->role;
-        if ($userRole == 'INVENTORY') {
+        if ($userRole == 'WAREHOUSE') {
             $bpb = BuktiPengeluaranBarang::orderBy('date')->where('status', 'Awaiting Warehouse Confirmation')->get();
         } else {
             $bpb = [];

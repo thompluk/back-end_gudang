@@ -40,12 +40,12 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function userSelectInventory()
+    public function userSelectWarehouse()
     {
         $currentUserId = Auth::user()->id;
 
         // Mengambil semua pengguna kecuali pengguna yang sedang login
-        $users = User::where('id', '!=', $currentUserId)->where('role', 'INVENTORY')->get();
+        $users = User::where('id', '!=', $currentUserId)->where('role', 'WAREHOUSE')->get();
 
         return response()->json([
             'success' => true,

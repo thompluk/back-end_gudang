@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // * User
     Route::get('/alluser', [UserController::class, 'index'])->name('user.index');
     Route::post('/userSelect', [UserController::class, 'userSelect'])->name('user.userSelect');
-    Route::post('/userSelectInventory', [UserController::class, 'userSelectInventory'])->name('user.userSelectInventory');
+    Route::post('/userSelectWarehouse', [UserController::class, 'userSelectWarehouse'])->name('user.userSelectWarehouse');
     Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
     Route::post('/user', [UserController::class, 'createuser'])->name('user.createuser');
     Route::put('/user/update/{id}', [UserController::class, 'update'])->name('user.update');

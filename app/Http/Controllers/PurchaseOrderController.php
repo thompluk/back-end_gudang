@@ -39,7 +39,7 @@ class PurchaseOrderController extends Controller
     {
         $userRole = Auth::user()->role;
 
-        if ($userRole == 'INVENTORY') {
+        if ($userRole == 'WAREHOUSE') {
             $po = PurchaseOrder::orderBy('tanggal')->where('arrival_status', 'Awaiting Delivery')->get();
         } else {
             $po = [];
